@@ -68,12 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener('wheel', handleUserScroll, { passive: true });
   window.addEventListener('touchstart', handleUserScroll, { passive: true });
 
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
-  requestAnimationFrame(raf);
-
   // Sync GSAP with Lenis
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => {
