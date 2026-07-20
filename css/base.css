@@ -80,6 +80,27 @@ header {
   color: var(--ink);
 }
 
+/* Autoplay Button */
+.autoplay-btn {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-serif-en);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--dust);
+  cursor: pointer;
+  z-index: 100;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.autoplay-btn:hover, .autoplay-btn.active {
+  color: var(--ink);
+}
+
 .scroll-line {
   width: 1px;
   height: 60px;
