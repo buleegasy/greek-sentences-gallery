@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文字画廊 · Text Gallery</title>
+  
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/gallery.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo en-text">GALLERY</div>
+    <div class="collection-name en-text">Curated Collection</div>
+  </header>
+
+  <div class="scroll-indicator">
+    <span class="en-text">Scroll to Explore</span>
+    <div class="scroll-line animate-pulse"></div>
+  </div>
+
+  <section class="gallery-section">
+    <div class="gallery-wrapper">
+      
+      <div class="slide intro-slide">
+        <div class="title-content">
+          <h1 class="main-title">文字画廊</h1>
+          <p class="subtitle en-text" style="font-style: italic;">"Thoughts materialized, borders crossed."</p>
+          <div class="title-line"></div>
+        </div>
+      </div>
+      
+      <!-- Artworks injected here -->
+      
+      <div class="slide fin-slide">
+        <div class="fin-content gsap-reveal">
+          <div class="fin-line"></div>
+          <h2 class="fin-title en-text" style="font-style: italic;">Fin.</h2>
+          <a href="#" class="back-to-top en-text">Return to Top</a>
+        </div>
+      </div>
+      
+    </div>
+  </section>
+
+  <script src="https://unpkg.com/lenis@1.1.2/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  
+  <script type="module" src="js/gallery.js"></script>
+  
+</body>
+</html>

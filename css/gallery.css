@@ -1,0 +1,251 @@
+/* Main horizontal scrolling container */
+.gallery-section {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.gallery-wrapper {
+  display: flex;
+  height: 100%;
+  width: max-content;
+}
+
+/* Base slide element */
+.slide {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Title Slide */
+.title-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.main-title {
+  font-size: 5rem;
+  letter-spacing: 0.4em; /* Increased spacing */
+  font-weight: 300;
+  margin-bottom: 2rem;
+  margin-left: 0.4em; /* Compensate for letter-spacing */
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  letter-spacing: 0.25em;
+  color: var(--ink-light); /* Darker for better contrast */
+  margin-bottom: 3.5rem;
+}
+
+.title-line {
+  width: 1px;
+  height: 100px; /* Taller */
+  background: linear-gradient(to bottom, var(--dust), transparent); /* Fade out */
+  margin: 0 auto;
+}
+
+/* Editorial Frame (Replacing the old artwork card) */
+.editorial-frame {
+  width: 75vw;
+  max-width: 1200px;
+  height: 65vh;
+  display: flex;
+  position: relative;
+  /* Removed top/bottom borders for boundless feel */
+  padding: 60px 0;
+  box-sizing: border-box;
+}
+
+.watermark-number {
+  position: absolute;
+  top: 55%; /* Shifted down slightly */
+  left: -2%;
+  transform: translateY(-50%);
+  font-size: 45vw; /* Slightly larger */
+  font-family: var(--font-serif-en);
+  font-weight: 300;
+  color: var(--ink);
+  opacity: 0.02;
+  z-index: 0;
+  pointer-events: none;
+  line-height: 1;
+  user-select: none;
+}
+
+.meta-column {
+  flex: 0 0 25%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 60px;
+  border-right: 1px solid rgba(181, 171, 152, 0.3);
+  z-index: 1;
+  text-align: right; /* Anchors the text to the dividing line */
+}
+
+.content-column {
+  flex: 1;
+  padding-left: 80px;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+}
+
+.exhibit-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  color: var(--dust);
+  display: block;
+  margin-bottom: 2.5rem;
+  text-transform: uppercase;
+}
+
+.chapter-title {
+  font-size: 3.5rem; /* Larger */
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.chapter-subtitle {
+  font-size: 1.1rem;
+  letter-spacing: 0.25em;
+  color: var(--rust);
+  font-weight: 300;
+}
+
+.meta-bottom {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: var(--dust); /* Softer text */
+  line-height: 2;
+}
+
+.artwork-text {
+  font-size: 1.25rem;
+  line-height: 2.4;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  text-align: justify;
+  max-width: 700px;
+}
+
+/* Robust Drop Cap */
+.artwork-text::first-letter {
+  float: left;
+  font-size: 4rem;
+  line-height: 0.85;
+  padding-top: 0.2rem;
+  padding-right: 0.8rem;
+  font-family: var(--font-serif-zh);
+  font-weight: 300;
+  color: var(--rust);
+}
+
+/* Fin Slide */
+.fin-content {
+  text-align: center;
+}
+
+.fin-line {
+  width: 60px;
+  height: 1px;
+  background-color: var(--dust);
+  margin: 0 auto 3rem;
+}
+
+.fin-title {
+  font-size: 2rem;
+  margin-bottom: 3rem;
+  color: var(--ink);
+}
+
+.back-to-top {
+  display: inline-block;
+  padding: 1rem 3rem;
+  border: 1px solid var(--dust);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: all 0.5s ease;
+}
+
+.back-to-top:hover {
+  background-color: var(--ink);
+  color: var(--parchment);
+  border-color: var(--ink);
+}
+
+/* Mobile Fallback */
+@media (max-width: 768px) {
+  .gallery-section {
+    height: auto;
+    overflow: visible;
+  }
+  
+  .gallery-wrapper {
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+  }
+  
+  .slide {
+    height: auto;
+    min-height: 100vh;
+    padding: 60px 20px;
+    box-sizing: border-box;
+  }
+  
+  .editorial-frame {
+    width: 100%;
+    height: auto;
+    flex-direction: column;
+    padding: 40px 0;
+    border-top: none;
+    border-bottom: none;
+  }
+  
+  .watermark-number {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 15rem;
+    opacity: 0.03;
+  }
+  
+  .meta-column {
+    padding-right: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(181, 171, 152, 0.4);
+    padding-bottom: 40px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  
+  .content-column {
+    padding-left: 0;
+  }
+  
+  .main-title {
+    font-size: 3rem;
+  }
+  
+  .chapter-title {
+    font-size: 2.2rem;
+  }
+  
+  .scroll-indicator {
+    display: none;
+  }
+}

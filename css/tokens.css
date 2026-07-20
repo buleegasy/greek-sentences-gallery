@@ -1,0 +1,17 @@
+:root {
+  /* Vintage / Gallery Palette */
+  --parchment: #f8f5ef;
+  --parchment-warm: #f3efe5;
+  --ink: #1a1a1a;
+  --ink-light: #3d3d3d;
+  --dust: #b5ab98;
+  --rust: #8c3a2b;
+  --shadow: rgba(26, 26, 26, 0.04);
+  
+  /* Typography */
+  --font-serif-en: 'Cormorant Garamond', serif;
+  --font-serif-zh: 'Noto Serif SC', serif;
+  
+  /* Dimensions */
+  --header-height: 80px;
+}

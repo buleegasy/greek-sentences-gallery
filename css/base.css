@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;400;600&display=swap');
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--parchment);
+  background-image: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%);
+  color: var(--ink);
+  font-family: var(--font-serif-zh);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; 
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3, p {
+  margin: 0;
+  font-weight: normal;
+}
+
+.en-text {
+  font-family: var(--font-serif-en);
+}
+
+header {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  height: var(--header-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+  z-index: 100;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.logo {
+  font-size: 1.2rem;
+  letter-spacing: 0.3em;
+  font-weight: 300;
+}
+
+.collection-name {
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dust);
+}
+
+.scroll-indicator {
+  position: fixed;
+  top: 50%; left: 40px;
+  transform: translateY(-50%);
+  z-index: 100;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0.5;
+}
+
+.scroll-indicator span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  background-color: var(--ink);
+  transform-origin: top;
+}
