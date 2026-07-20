@@ -31,30 +31,32 @@ h1, h2, h3, p {
 }
 
 header {
-  position: fixed;
-  top: 0; left: 0; width: 100%;
-  height: var(--header-height);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  position: absolute;
+  top: 40px;
+  width: 100%;
   padding: 0 40px;
   box-sizing: border-box;
-  z-index: 100;
-  mix-blend-mode: multiply;
-  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  color: rgba(181, 171, 152, 0.6);
+  text-transform: uppercase;
+  z-index: 10;
 }
 
 .logo {
-  font-size: 1.2rem;
-  letter-spacing: 0.3em;
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
   font-weight: 300;
+  color: rgba(181, 171, 152, 0.6);
 }
 
 .collection-name {
-  font-size: 0.9rem;
-  letter-spacing: 0.2em;
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: var(--dust);
+  color: rgba(181, 171, 152, 0.6);
 }
 
 .scroll-indicator {
@@ -71,13 +73,11 @@ header {
   opacity: 0.5;
 }
 
-.scroll-indicator span {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 0.75rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--ink);
+.scroll-line {
+  width: 1px;
+  height: 80px;
+  background-color: rgba(181, 171, 152, 0.4);
+  transform-origin: top;
 }
 
 /* Autoplay Button */
@@ -99,11 +99,4 @@ header {
 
 .autoplay-btn:hover, .autoplay-btn.active {
   color: var(--ink);
-}
-
-.scroll-line {
-  width: 1px;
-  height: 60px;
-  background-color: var(--ink);
-  transform-origin: top;
 }
