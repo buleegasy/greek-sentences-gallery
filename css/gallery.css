@@ -32,7 +32,7 @@
 }
 
 .main-title {
-  font-size: 3.5rem; /* Reduced to fit longer title gracefully */
+  font-size: 5rem;
   letter-spacing: 0.4em; 
   font-weight: 300;
   margin-bottom: 2rem;
