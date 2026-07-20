@@ -32,11 +32,11 @@
 }
 
 .main-title {
-  font-size: 5rem;
-  letter-spacing: 0.4em; /* Increased spacing */
+  font-size: 3.5rem; /* Reduced to fit longer title gracefully */
+  letter-spacing: 0.4em; 
   font-weight: 300;
   margin-bottom: 2rem;
-  margin-left: 0.4em; /* Compensate for letter-spacing */
+  margin-left: 0.4em; 
 }
 
 .subtitle {

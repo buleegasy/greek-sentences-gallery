@@ -14,8 +14,38 @@ document.addEventListener("DOMContentLoaded", () => {
     infinite: false,
   });
 
+  let isAutoPlaying = false;
+  const autoPlaySpeed = 1.5; // Smooth slow scroll speed
+  const autoplayBtn = document.getElementById('autoplay-btn');
+
+  if (autoplayBtn) {
+    autoplayBtn.addEventListener('click', () => {
+      isAutoPlaying = !isAutoPlaying;
+      autoplayBtn.textContent = isAutoPlaying ? '[ PAUSE ]' : '[ AUTO PLAY ]';
+      autoplayBtn.classList.toggle('active', isAutoPlaying);
+    });
+  }
+
+  // Cancel autoplay if user scrolls manually
+  function handleUserScroll(e) {
+    // Only cancel if it's a significant manual scroll
+    if (isAutoPlaying && e.type === 'wheel') {
+      isAutoPlaying = false;
+      if (autoplayBtn) {
+        autoplayBtn.textContent = '[ AUTO PLAY ]';
+        autoplayBtn.classList.remove('active');
+      }
+    }
+  }
+
+  window.addEventListener('wheel', handleUserScroll, { passive: true });
+  window.addEventListener('touchstart', handleUserScroll, { passive: true });
+
   function raf(time) {
     lenis.raf(time);
+    if (isAutoPlaying) {
+      window.scrollBy(0, autoPlaySpeed);
+    }
     requestAnimationFrame(raf);
   }
   requestAnimationFrame(raf);
