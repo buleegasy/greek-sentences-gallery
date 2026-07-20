@@ -15,26 +15,53 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   let isAutoPlaying = false;
-  const autoPlaySpeed = 1.5; // Smooth slow scroll speed
+  let autoPlayTimer;
+  let currentAutoSlide = 0;
   const autoplayBtn = document.getElementById('autoplay-btn');
+
+  function startAutoplay() {
+    isAutoPlaying = true;
+    autoplayBtn.textContent = '[ PAUSE ]';
+    autoplayBtn.classList.add('active');
+    
+    autoPlayTimer = setInterval(() => {
+      const slides = document.querySelectorAll('.slide');
+      currentAutoSlide = (currentAutoSlide + 1) % slides.length;
+      
+      const gallerySection = document.querySelector('.gallery-section');
+      const wrapper = document.querySelector('.gallery-wrapper');
+      
+      if (window.innerWidth > 768) {
+        const sectionTop = gallerySection.offsetTop;
+        const totalScroll = wrapper.offsetWidth;
+        const target = sectionTop + (totalScroll / (slides.length - 1)) * currentAutoSlide;
+        lenis.scrollTo(target, { duration: 1.8, easing: (t) => 1 - Math.pow(1 - t, 4) }); 
+      } else {
+        lenis.scrollTo(slides[currentAutoSlide], { duration: 1.5, offset: -50, easing: (t) => 1 - Math.pow(1 - t, 4) });
+      }
+    }, 5000); // Wait 5 seconds per slide, then animate quickly
+  }
+
+  function stopAutoplay() {
+    if (!isAutoPlaying) return;
+    isAutoPlaying = false;
+    clearInterval(autoPlayTimer);
+    if (autoplayBtn) {
+      autoplayBtn.textContent = '[ AUTO PLAY ]';
+      autoplayBtn.classList.remove('active');
+    }
+  }
 
   if (autoplayBtn) {
     autoplayBtn.addEventListener('click', () => {
-      isAutoPlaying = !isAutoPlaying;
-      autoplayBtn.textContent = isAutoPlaying ? '[ PAUSE ]' : '[ AUTO PLAY ]';
-      autoplayBtn.classList.toggle('active', isAutoPlaying);
+      if (isAutoPlaying) stopAutoplay();
+      else startAutoplay();
     });
   }
 
-  // Cancel autoplay if user scrolls manually
   function handleUserScroll(e) {
-    // Only cancel if it's a significant manual scroll
     if (isAutoPlaying && e.type === 'wheel') {
-      isAutoPlaying = false;
-      if (autoplayBtn) {
-        autoplayBtn.textContent = '[ AUTO PLAY ]';
-        autoplayBtn.classList.remove('active');
-      }
+      stopAutoplay();
     }
   }
 
@@ -43,9 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function raf(time) {
     lenis.raf(time);
-    if (isAutoPlaying) {
-      window.scrollBy(0, autoPlaySpeed);
-    }
     requestAnimationFrame(raf);
   }
   requestAnimationFrame(raf);
