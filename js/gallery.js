@@ -1,6 +1,4 @@
 // 24/7 Pure Neural Generative Long-form Article Streamer
-// 100% 真实云端 Base 模型推理直连，绝无任何预设写死文本
-
 import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
 let totalWordCount = 0;
@@ -13,13 +11,13 @@ const wordCounterElem = document.getElementById('word-counter');
 const contentContainer = document.getElementById('article-content');
 
 async function initClient() {
-  if (statusElem) statusElem.innerText = "CONNECTING TO SMOLLM2-360M NEURAL ENGINE...";
+  if (statusElem) statusElem.innerText = "CONNECTING TO NEURAL CLUSTER...";
   try {
     gradioClient = await Client.connect("Buleegasy/GREEK_DENG");
-    if (statusElem) statusElem.innerText = "24/7 NEURAL STREAM ACTIVE · 100% MODEL INFERENCE";
+    if (statusElem) statusElem.innerText = "24/7 NEURAL PIPELINE ACTIVE · STREAMING GREEK DENG";
   } catch (e) {
     console.error("Connection error:", e);
-    if (statusElem) statusElem.innerText = "CONNECTING TO CLUSTER...";
+    if (statusElem) statusElem.innerText = "RECONNECTING TO CLUSTER...";
     await new Promise(r => setTimeout(r, 2000));
     return initClient();
   }
@@ -79,12 +77,10 @@ async function streamNewParagraph(textSegment, isFirstParagraph = false) {
     if (cursor) cursor.remove();
   }
 
-  // 自然呼吸停顿
   await new Promise(r => setTimeout(r, 1600));
 }
 
 async function runInfiniteManuscriptLoop() {
-  // 清空初始占位
   const initialPlaceholder = document.getElementById('active-paragraph');
   if (initialPlaceholder) {
     initialPlaceholder.remove();
@@ -98,12 +94,11 @@ async function runInfiniteManuscriptLoop() {
     try {
       if (statusElem) statusElem.innerText = "⚡ NEURAL INFERENCE COMPUTING...";
       
-      // 真实调用云端 SmolLM2-360M 生成下一个段落
       const result = await gradioClient.predict("/generate", [
         fullManuscriptContext
       ]);
 
-      if (statusElem) statusElem.innerText = "24/7 NEURAL STREAM ACTIVE · STREAMING MANUSCRIPT";
+      if (statusElem) statusElem.innerText = "24/7 NEURAL PIPELINE ACTIVE · STREAMING GREEK DENG";
 
       if (result && result.data && result.data[0]) {
         const rawJson = result.data[0];
@@ -116,17 +111,14 @@ async function runInfiniteManuscriptLoop() {
       }
     } catch (err) {
       console.error("Inference fetch error:", err);
-      if (statusElem) statusElem.innerText = "RECONNECTING TO NEURAL PIPELINE...";
+      if (statusElem) statusElem.innerText = "RECONNECTING PIPELINE...";
       await new Promise(r => setTimeout(r, 2000));
       await initClient();
       continue;
     }
 
     if (nextSegment && nextSegment.trim().length > 5) {
-      // 保持长文上下文窗口
       fullManuscriptContext = (fullManuscriptContext + " " + nextSegment).slice(-500);
-
-      // 实时逐字流式打入文章
       await streamNewParagraph(nextSegment, paragraphCounter === 1);
       paragraphCounter++;
     } else {
