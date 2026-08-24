@@ -6,48 +6,25 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>我在希腊蹬随机的句子 · 单屏满幅艺术装置</title>
+  <title>我在希腊蹬随机的句子 · 24H 稳定滑动画廊</title>
   
-  <link rel="stylesheet" href="css/tokens.css?v=6">
-  <link rel="stylesheet" href="css/base.css?v=6">
-  <link rel="stylesheet" href="css/gallery.css?v=6">
-  <link rel="stylesheet" href="css/animations.css?v=6">
+  <link rel="stylesheet" href="css/tokens.css?v=7">
+  <link rel="stylesheet" href="css/base.css?v=7">
+  <link rel="stylesheet" href="css/gallery.css?v=7">
+  <link rel="stylesheet" href="css/animations.css?v=7">
 </head>
-<body class="single-page-locked">
+<body class="gallery-viewport-locked">
 
   <!-- 顶部极简展陈导航 -->
   <header>
-    <div class="logo en-text">EXHIBITION · GREEK_DENG</div>
-    <div class="collection-name en-text">24/7 Single-Frame Autonomous Installation</div>
+    <div class="logo en-text">GALLERY · GREEK_DENG</div>
+    <div class="collection-name en-text">24/7 Stable Horizontal Sliding Installation</div>
   </header>
 
-  <!-- 42vw 巨型半透明背景水印编号 -->
-  <div class="watermark-number en-text" id="watermark-num">01</div>
-
-  <!-- 单屏满幅高定画框（绝对锁定一屏，物理禁止任何滚动） -->
-  <main class="single-viewport-container">
-    <div class="editorial-frame" id="editorial-frame">
-      
-      <!-- 左侧元数据栏 -->
-      <aside class="meta-column">
-        <div class="meta-top">
-          <span class="exhibit-label en-text" id="exhibit-label">Exhibit No. 01</span>
-          <h2 class="chapter-title" id="greek-lemma">λόγος</h2>
-          <h3 class="chapter-subtitle en-text" id="greek-meta">logos · Single Seed</h3>
-        </div>
-        <div class="meta-bottom en-text">
-          <span>SMOLLM2-360M BASE</span><br>
-          <span style="font-style: italic;">Pure Autoregressive Flow</span>
-        </div>
-      </aside>
-
-      <!-- 右侧满幅居中正文（仅显示当前生成的一页，铺满屏幕） -->
-      <section class="content-column">
-        <p class="artwork-paragraph">
-          <span class="drop-cap" id="drop-cap-char">在</span><span id="text-stream"></span><span class="type-cursor" id="type-cursor"></span>
-        </p>
-      </section>
-
+  <!-- 横向稳定滑动画廊视口 -->
+  <main class="gallery-viewport">
+    <div class="gallery-track" id="gallery-track">
+      <!-- 字块 Slide 将由 JS 动态生成并稳定横向滑动流转 -->
     </div>
   </main>
 
@@ -55,14 +32,14 @@
   <footer class="manuscript-footer">
     <div class="status-left">
       <span class="live-dot"></span>
-      <span id="stream-status">SINGLE-FRAME STREAM ACTIVE</span>
-      <span class="reading-timer en-text" id="timer-display">· STREAMING...</span>
+      <span id="stream-status">24/7 HORIZONTAL STREAM ACTIVE</span>
+      <span class="reading-timer en-text" id="timer-display">· GLIDING...</span>
     </div>
     <div class="status-right en-text">
-      <span>NO SCROLL · SINGLE PAGE AUTO-CYCLE</span>
+      <span>STABLE SLIDING EXHIBITS · SMOLLM2-360M</span>
     </div>
   </footer>
 
-  <script type="module" src="js/gallery.js?v=single_page_v6"></script>
+  <script type="module" src="js/gallery.js?v=stable_slide_v7"></script>
 </body>
 </html>

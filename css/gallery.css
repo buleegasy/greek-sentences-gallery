@@ -1,6 +1,6 @@
-/* Single-Frame Non-Scrollable Editorial Layout */
+/* Stable Horizontal Sliding Gallery Layout */
 
-html, body.single-page-locked {
+html, body.gallery-viewport-locked {
   height: 100vh !important;
   width: 100vw !important;
   overflow: hidden !important;
@@ -12,9 +12,40 @@ html, body.single-page-locked {
   user-select: none;
 }
 
+/* 全屏画廊主视口 */
+.gallery-viewport {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* 稳定横向滑轨（贝塞尔物理缓动） */
+.gallery-track {
+  display: flex;
+  height: 100vh;
+  width: max-content;
+  transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* 单个字块 Slide（单屏满幅呈现） */
+.slide {
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 50px;
+  box-sizing: border-box;
+  position: relative;
+}
+
 /* 42vw 巨型半透明背景水印编号 */
 .watermark-number {
-  position: fixed;
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -27,22 +58,9 @@ html, body.single-page-locked {
   pointer-events: none;
   line-height: 1;
   user-select: none;
-  transition: opacity 0.6s ease;
 }
 
-/* 视口居中画框（严格锁死一屏，铺满屏幕） */
-.single-viewport-container {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-  padding: 80px 50px;
-  position: relative;
-  z-index: 1;
-}
-
+/* 字块高定画框 */
 .editorial-frame {
   width: 100%;
   max-width: 1200px;
@@ -50,17 +68,8 @@ html, body.single-page-locked {
   grid-template-columns: 280px 1fr;
   gap: 56px;
   align-items: center;
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.editorial-frame.fade-out {
-  opacity: 0;
-  transform: scale(0.98);
-}
-
-.editorial-frame.fade-in {
-  opacity: 1;
-  transform: scale(1);
+  position: relative;
+  z-index: 1;
 }
 
 /* 左侧元数据栏 */
@@ -110,7 +119,7 @@ html, body.single-page-locked {
   text-transform: uppercase;
 }
 
-/* 右侧满幅正文（单屏呈现铺满视觉） */
+/* 右侧满幅字块正文 */
 .content-column {
   display: flex;
   align-items: center;
@@ -126,7 +135,7 @@ html, body.single-page-locked {
   word-wrap: break-word;
 }
 
-/* 朱砂红 4.6rem Drop Cap 首字下沉 */
+/* 朱砂红 4.8rem Drop Cap 首字下沉 */
 .drop-cap {
   float: left;
   font-size: 4.8rem;
@@ -203,7 +212,7 @@ html, body.single-page-locked {
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-  .single-viewport-container {
+  .slide {
     padding: 70px 20px 80px;
   }
 
