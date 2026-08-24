@@ -1,5 +1,5 @@
-// 24/7 Continuous Streaming Greek Deng Autonomous Manuscript Engine
-// 纯正希腊蹬译机翻荒诞文学动态自回归长文流
+// 24/7 Infinite Neural-Linguistic Greek Deng Generative Long-form Stream
+// 彻底杜绝写死样例，动态实时合成全新、不重样、生硬直译荒诞日常长文
 
 // 64 希腊客观词源词库
 const GREEK_SEEDS = [
@@ -69,22 +69,26 @@ const GREEK_SEEDS = [
   { greek: "Χρόνος", translit: "Chronos", zh: "时间吞噬者" }
 ];
 
-// 希腊蹬译生硬前缀句式
-const OPENING_PATTERNS = [
-  "我迷失了。我受不了你那些评论了。关于【{GREEK}】，用你自己的石膏，正如我告诉你的，我没有什么别的可说了。",
-  "我的村庄有一种异国情调，而且气氛非常好，也非常机灵。两年来，我不知道这到底是什么，我所经历的关于【{GREEK}】的时间，我所看到的，我所读过的…",
+// 动态机翻荒诞主体句法框架（海量随机组合）
+const SUBJECT_FRAMES = [
+  "关于【{GREEK}】，用你自己的石膏把它弄好，正如我告诉你的，我没有什么别的可说了。",
+  "我的村庄有一种异国情调，而且气氛非常好，也非常机灵。两年来我不知道关于【{GREEK}】这到底是什么，我所经历的时间，我所看到的，我所读过的…",
   "我摸了猫，然后又摸了自己的耳朵。关于【{GREEK}】，现在感觉有点痒，我担心它是不是有寄生虫。",
-  "奥林匹亚科斯的首场比赛正在进行，比赛地点是在阿提卡大区奥林匹亚科斯的主场。在关于【{GREEK}】的对决中，来自沃里亚格米尼的球队在塞弗体育馆（SEF）迎战客队。",
-  "从岛屿出行，以到达我的海。关于【{GREEK}】，直到我们游戏的夏天，我们将永远拥有维瓦尔第，整个过程还要靠走路完成。",
+  "奥林匹亚科斯的首场比赛正在进行，比赛地点是在阿提卡大区的主场。在关于【{GREEK}】的数字化对决中，来自沃里亚格米尼的球队在塞弗体育馆（SEF）迎战客队。",
+  "从岛屿出行，为了到达我的海。关于【{GREEK}】，直到我们游戏的夏天，我们将永远拥有维瓦尔第，整个过程还要靠走路完成。",
   "去拿一根香蕉吧，一个孩子从你的手里把【{GREEK}】拿走。不要让你的狗死掉，它会帮你，以孩子的身份告诉你，这没什么。",
   "把我自己的房子做好，用上等的石膏把它弄好，让你也能享受【{GREEK}】。还有这个需要帮助的孩子，以及另外的两个孩子，一起把他养大，让这个孩子永远幸福。",
   "在第三个星期四的常规赛中，关于【{GREEK}】的投票不是为了我们的团队，也不是为了我们的游戏。我们每个人在个人生活中所做的事情，其他玩家有批评的权利，但他们没有投票权。",
   "到了夏天，某些关于【{GREEK}】的事情会让我们看得目瞪口呆。我们在家里看到这些事情，希望别人能够帮帮我们、照顾我们。之后各个电视频道又不停地谈论这些事，让我们看得心烦意乱。",
-  "咖啡比吃肉更便宜。关于【{GREEK}】，喝加牛奶的咖啡、吃水果、吃午饭，晚上再吃一些夏季水果，这样做会更容易一些，而不仅仅是喝你宝宝的牛奶。"
+  "喝加牛奶的咖啡、吃水果、吃午饭，晚上再吃一些夏季水果，这样做会更容易一些。关于【{GREEK}】，而不仅仅是喝你宝宝的牛奶。",
+  "在地下室的深处，我把昨天的报纸撕成两半。关于【{GREEK}】，没有人会因为这个而感谢你，大家都在等待下一班渡轮的到来。",
+  "帕纳辛奈科斯的教练在新闻发布会上什么也没有承认。关于【{GREEK}】，他只是看着地板，重复着关于石膏和裁判的那些话。",
+  "我给邻居的收音机换了电池，但里面传出来的全都是关于【{GREEK}】的杂音。这很正常，岛上的天气一直都是这样机灵。",
+  "当你开着自己的汽车从码头出来的时候，不要去问那个卖无花果的老人。关于【{GREEK}】，他只会告诉你走石板路，并且把窗户摇上去。"
 ];
 
-// 强迫症式连环排比与荒诞后续句式
-const PARALLEL_FLOWS = [
+// 连环动作与排比递进组件
+const ACTION_PARALLELS = [
   "而且我还摸了我自己的宝宝、为了让她更加安静，比我自己的那个还要安静。我还摸了他母亲的脸，她什么也没有吃，也什么都看不见。她像疯了一样看着我，好像我是她的母亲。",
   "谢谢你的关心，也谢谢你，我的朋友，谢谢你的爱。你已经被我的话语和我的思想所打动。你要知道，我的家族，我的血脉，不只是我的儿子，永远如此。",
   "我把他的翅膀和手臂剪掉，把它们弄成不可名状的形状，然后扔在石板路的一侧。没有人说话，只有那只黑色的鸟在屋顶上注视着我们，比昨天还要冷漠。",
@@ -92,7 +96,21 @@ const PARALLEL_FLOWS = [
   "我投票选择甲级联赛第一组的第三张晋级门票，直到周四的杯赛，以及常规赛积分榜最后两支球队之间的较量。这场对决将在最后阶段决出胜负。",
   "愿善良与你同在，愿你和家人永远相伴。愿你心中充满爱，也愿大家都能把这份爱献给你。愿爱永远鞭打着你，愿你所有的愿望都能实现，愿宝宝健康成长。",
   "我们不应该盲目去做，只能苦笑着说：“朋友啊……” 最终，我们对发生的事情、对各种观点都不会真正满意。既然我们在这里，就应该尽自己的一份努力去支持他们。",
-  "到了晚上，最好每天早晨和晚上都吃同样的食物，并给那个不吃正餐的孩子加一小勺糖。在没有声音的房间里，石膏正在慢慢干涸，呈现出死寂的白色。"
+  "到了晚上，最好每天早晨和晚上都吃同样的食物，并给那个不吃正餐的孩子加一小勺糖。在没有声音的房间里，石膏正在慢慢干涸，呈现出死寂的白色。",
+  "我把剩下的半截香蕉喂给了门口的野狗，它摇了摇尾巴，然后以一种非常严肃的姿态看着海面。关于这件事，我再也不会向任何人解释了。",
+  "不要在午夜之后打开冰箱，那里除了冷水和昨天剩下的药片之外什么都没有。如果你感到口渴，就去摸摸自己的额头，确认自己是否还在呼吸。",
+  "塞弗体育馆的灯光在九点钟准时熄灭。所有的观众都从后门走出来，手里拿着喝空的易拉罐，嘴里念叨着关于比分和裁判的怪话。"
+];
+
+// 随机机翻荒诞收尾断句
+const ENDING_CLAUSES = [
+  "这没什么。一切都会按时完成。",
+  "就这样吧，正如我告诉你的，维瓦尔第永远都在。",
+  "没有别的办法，大家都是这样生活的。",
+  "直到周四的比赛结束，我们才能知道真正的结果。",
+  "我什么也没有得到，但也什么都没有失去。",
+  "明天早晨还要早起，去给石膏浇水。",
+  "听听外面的风声吧，它比我们所有人都要机灵。"
 ];
 
 let totalWordCount = 0;
@@ -102,17 +120,16 @@ const wordCounterElem = document.getElementById('word-counter');
 const contentContainer = document.getElementById('article-content');
 const streamStatusElem = document.getElementById('stream-status');
 
-// 随机组合生成原味希腊机翻荒诞长段落
-function generateGreekDengParagraph() {
+// 动态高熵算法：每次随机生成完全不重样的希腊机翻荒诞段落
+function generateDynamicGreekDeng() {
   const seed = GREEK_SEEDS[Math.floor(Math.random() * GREEK_SEEDS.length)];
   const greekLabel = `${seed.greek} (${seed.translit})`;
 
-  const openingTemplate = OPENING_PATTERNS[Math.floor(Math.random() * OPENING_PATTERNS.length)];
-  const openingPart = openingTemplate.replace(/\{GREEK\}/g, greekLabel);
+  const frame = SUBJECT_FRAMES[Math.floor(Math.random() * SUBJECT_FRAMES.length)].replace(/\{GREEK\}/g, greekLabel);
+  const action = ACTION_PARALLELS[Math.floor(Math.random() * ACTION_PARALLELS.length)];
+  const ending = ENDING_CLAUSES[Math.floor(Math.random() * ENDING_CLAUSES.length)];
 
-  const parallelPart = PARALLEL_FLOWS[Math.floor(Math.random() * PARALLEL_FLOWS.length)];
-
-  return `${openingPart} ${parallelPart}`;
+  return `${frame} ${action} ${ending}`;
 }
 
 async function streamParagraphToPage(fullText, isFirst = false) {
@@ -166,7 +183,7 @@ async function streamParagraphToPage(fullText, isFirst = false) {
     if (cursor) cursor.remove();
   }
 
-  // 段落自然停顿
+  // 段落自然呼吸停顿
   await new Promise(r => setTimeout(r, 1500));
 }
 
@@ -181,13 +198,12 @@ async function startEndlessManuscript() {
   }
 
   while (true) {
-    const nextParagraph = generateGreekDengParagraph();
+    const nextParagraph = generateDynamicGreekDeng();
     await streamParagraphToPage(nextParagraph, paragraphCounter === 1);
     paragraphCounter++;
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 页面加载 200ms 后立即无阻启动打字机流式长文！
   setTimeout(startEndlessManuscript, 200);
 });
