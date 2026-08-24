@@ -1,111 +1,107 @@
-/* Single Fullscreen Exhibit Layout */
-.single-exhibit-container {
-  width: 100vw;
-  height: 100vh;
+/* Continuous Long-form Manuscript Layout */
+
+.manuscript-wrapper {
+  width: 100%;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Editorial Frame (铺满整个屏幕的高定画框) */
-.editorial-frame {
-  width: 82vw;
-  max-width: 1350px;
-  height: 72vh;
-  display: flex;
-  position: relative;
-  align-items: stretch;
-  padding: 40px 0;
+  padding: 130px 24px 180px;
   box-sizing: border-box;
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  position: relative;
+  z-index: 1;
 }
 
-/* 45vw 巨型水印数字 */
-.watermark-number {
-  position: absolute;
+.manuscript-article {
+  width: 100%;
+  max-width: 820px;
+  position: relative;
+}
+
+/* 巨型背景半透明水印 */
+.watermark-bg {
+  position: fixed;
   top: 50%;
-  left: -4%;
-  transform: translateY(-50%);
-  font-size: 42vw;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 40vw;
   font-family: var(--font-serif-en);
   font-weight: 300;
   color: var(--ink);
-  opacity: 0.022;
+  opacity: 0.02;
   z-index: 0;
   pointer-events: none;
   line-height: 1;
   user-select: none;
 }
 
-/* 左侧元数据栏：向右对齐，紧贴竖线 */
-.meta-column {
-  flex: 0 0 28%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding-right: 50px;
-  border-right: 1px solid rgba(181, 171, 152, 0.35);
-  z-index: 1;
-  text-align: right;
+/* 文章头部 */
+.article-header {
+  text-align: center;
+  margin-bottom: 4.5rem;
 }
 
-.exhibit-label {
+.manuscript-tag {
   font-size: 0.75rem;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.35em;
   color: var(--dust);
   display: block;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   text-transform: uppercase;
 }
 
-.chapter-title {
-  font-size: 3.8rem;
+.article-title {
+  font-size: 3.5rem;
   font-weight: 300;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.6rem;
+  letter-spacing: 0.15em;
   color: var(--ink);
-  font-family: var(--font-serif-en), var(--font-serif-zh);
+  margin-bottom: 1.2rem;
+  font-family: var(--font-serif-zh);
 }
 
-.chapter-subtitle {
-  font-size: 1.1rem;
-  letter-spacing: 0.2em;
-  color: var(--rust);
-  font-weight: 300;
+.article-subtitle {
+  font-size: 1.05rem;
+  letter-spacing: 0.15em;
+  color: var(--dust);
+  font-style: italic;
+  margin-bottom: 2.5rem;
   line-height: 1.6;
 }
 
-.meta-bottom {
-  font-size: 0.8rem;
-  letter-spacing: 0.15em;
-  color: var(--dust);
-  line-height: 2;
+.title-divider {
+  width: 60px;
+  height: 1px;
+  background: var(--dust);
+  margin: 0 auto;
+  opacity: 0.6;
 }
 
-/* 右侧正文栏：铺满整个屏幕的优美长文段 */
-.content-column {
-  flex: 1;
-  padding-left: 70px;
-  display: flex;
-  align-items: center;
-  z-index: 1;
+/* 正文段落长流 */
+.article-content {
+  width: 100%;
 }
 
-.artwork-text {
-  font-size: 1.45rem;
-  line-height: 2.5;
-  letter-spacing: 0.08em;
+.paragraph-block {
+  font-size: 1.35rem;
+  line-height: 2.6;
+  letter-spacing: 0.06em;
   color: var(--ink);
   text-align: justify;
-  max-width: 820px;
+  margin-bottom: 2.2rem;
+  text-indent: 2.2em;
+  position: relative;
+  word-wrap: break-word;
+  transition: opacity 0.4s ease;
 }
 
-/* 经典首字下沉 Drop Cap */
+/* 第一段取消缩进并添加大首字下沉 */
+.paragraph-block:first-of-type {
+  text-indent: 0;
+}
+
+/* 经典朱砂红首字下沉 Drop Cap */
 .drop-cap {
   float: left;
-  font-size: 4.5rem;
+  font-size: 4.6rem;
   line-height: 0.85;
   padding-top: 0.25rem;
   padding-right: 0.85rem;
@@ -114,21 +110,47 @@
   color: var(--rust);
 }
 
+/* 实时打字机光标 */
+.type-cursor {
+  display: inline-block;
+  width: 2.5px;
+  height: 1.25em;
+  background-color: var(--rust);
+  vertical-align: text-bottom;
+  margin-left: 5px;
+  animation: blinkCursor 0.8s infinite;
+}
+
+@keyframes blinkCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* 底部状态栏 */
-footer {
-  position: absolute;
-  bottom: 30px;
+.manuscript-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
   width: 100%;
-  padding: 0 50px;
-  box-sizing: border-box;
+  padding: 16px 50px;
+  background: rgba(248, 245, 239, 0.92);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(181, 171, 152, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.7rem;
-  letter-spacing: 0.25em;
-  color: rgba(181, 171, 152, 0.7);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: rgba(181, 171, 152, 0.85);
   text-transform: uppercase;
-  z-index: 10;
+  z-index: 100;
+  box-sizing: border-box;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .live-dot {
@@ -137,7 +159,6 @@ footer {
   height: 6px;
   background-color: var(--rust);
   border-radius: 50%;
-  margin-right: 8px;
   box-shadow: 0 0 8px var(--rust);
   animation: pulseDot 2s infinite ease-in-out;
 }
@@ -147,65 +168,37 @@ footer {
   50% { opacity: 1; }
 }
 
-.type-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 1.3em;
-  background-color: var(--rust);
-  vertical-align: text-bottom;
-  margin-left: 4px;
-  animation: blinkCursor 0.8s infinite;
+.word-counter {
+  color: var(--rust);
+  font-weight: 600;
 }
 
-@keyframes blinkCursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-.fade-out {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-.fade-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Mobile Fallback */
+/* Mobile Responsive */
 @media (max-width: 768px) {
-  .editorial-frame {
-    width: 90vw;
-    height: auto;
-    flex-direction: column;
-    padding: 20px 0;
+  .manuscript-wrapper {
+    padding: 90px 18px 120px;
   }
   
-  .watermark-number {
-    font-size: 15rem;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  .article-title {
+    font-size: 2.2rem;
   }
   
-  .meta-column {
-    border-right: none;
-    border-bottom: 1px solid rgba(181, 171, 152, 0.35);
-    padding-right: 0;
-    padding-bottom: 25px;
-    margin-bottom: 25px;
-    text-align: center;
-  }
-  
-  .content-column {
-    padding-left: 0;
-  }
-  
-  .chapter-title {
-    font-size: 2.4rem;
-  }
-  
-  .artwork-text {
+  .paragraph-block {
     font-size: 1.15rem;
-    line-height: 2.1;
+    line-height: 2.2;
+    margin-bottom: 1.6rem;
+  }
+  
+  .drop-cap {
+    font-size: 3.6rem;
+  }
+  
+  .manuscript-footer {
+    padding: 12px 20px;
+    font-size: 0.65rem;
+  }
+  
+  .status-right {
+    display: none;
   }
 }

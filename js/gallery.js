@@ -1,103 +1,129 @@
-// Local & Remote Dynamic 24/7 Generative Art Gallery Driver
+// 24/7 Continuous Streaming Long-form Article Driver
+const API_URL = "https://buleegasy-greek-deng.hf.space/api/generate";
 
-const GREEK_WORDS = [
-  { lemma: "λόγος", translit: "logos", definition: "word, thought & reason", content: "在静谧的时刻，微风穿过古老的柱廊，所有的语言在此凝固为永恒的思考。文字超越了原本的载体，在晨光与落日的交替间，记录下不可言说的痕迹与漫长的追寻。" },
-  { lemma: "ἀγάπη", translit: "agape", definition: "universal benevolence & affection", content: "当光线透过斑驳的橄榄树叶洒在地面上，温柔的情感便如同无声的细雨渗入泥土。每一个生命都在默默回应着这片土地最初的呼唤，不求回报地流淌。" },
-  { lemma: "σοφία", translit: "sophia", definition: "deep wisdom & insight", content: "古老的石碑在时间的冲刷下逐渐模糊，但那些沉静的思想依然在岁月中回荡。我们探寻未知的脚步从未停歇，在漫长的旅途中寻找内心的安宁与真理。" },
-  { lemma: "ἄνεμος", translit: "anemos", definition: "breath of wind & spirit", content: "海浪一次又一次拍打着荒凉的岸礁，带走白昼的喧嚣，留下夜空的辽阔与深邃。风从远方的海面吹来，诉说着未曾被凡人书写过的古老篇章。" },
-  { lemma: "φῶς", translit: "phos", definition: "radiance & clear daylight", content: "清晨的第一缕阳光穿破云层的阴翳，照亮了沉睡已久的村落与山脊。万物在苏醒的呼吸中舒展，所有的阴影都在澄澈的光芒中消退散尽。" },
-  { lemma: "αἷμα", translit: "haima", definition: "blood & circulation of life", content: "脉管在深处微弱地跳动，将温度输送到冰冷的指尖。生命的循环从未停止，在寂静的黑夜中维持着微弱而坚韧的呼吸，等待破晓的到来。" },
-  { lemma: "ψυχή", translit: "psyche", definition: "breath of soul & ethereal spirit", content: "若灵魂有翅膀，它必将在无垠的夜色中掠过海面。肉身的牢笼终会消解，唯有纯粹的知觉在星辰之间漂浮，与无尽的宇宙融为一体。" },
-  { lemma: "ἔρεβος", translit: "erebos", definition: "primordial darkness & shadow", content: "在一切光明诞生之前，原初的幽冥曾笼罩着大地。黑暗并非终结，而是万物孕育的子宫，在绝对的静默中等待第一声心跳。" }
+// 预设文学长文种子段落链（提供开篇及离线流畅续写保障）
+const LITERARY_STREAMS = [
+  "在希腊漫长的日光与海浪之间，时间的流淌变得极其缓慢。石板路从山丘一直延伸到海岸，每一块石头都在海风的雕刻下失去了棱角。我们站在这里，看着远方海平线上缓缓升起的光芒，忽然明白文字从来不需要被刻意赋予某种意义。它只是如同空气中的微尘，在光线穿透的一瞬间显现出微小的轨迹，然后再度归于沉默。",
+  "当夜幕降临在这座孤立的村落，街道上的喧嚣随之消散。人们关上木门，只有风穿过老槐树枝叶的声音在寂静中回响。古老的希腊字母在古老的石碑上刻印着原初的概念，如同不可违抗的绳索，将过去的记忆与未来的时刻牢牢连结在一起。我们在这个世界上所寻找的，或许不过是一种能够被理解的平静，一种越过所有语言边界的坦然。",
+  "清晨的露水凝结在橄榄叶的尖端，在第一声鸟鸣中悄然滴落。若有若无的思想在静谧中漫延，不带任何预设的偏见与框架。文字自然而然地流淌出来，记录着温度的细微起伏，记录着指尖划过粗糙纸张时的触感。这不仅是一场关于旅途的记录，更是意识本身在无垠世界里的自然呼吸与舒展。",
+  "在阳光最强烈的中午，海面反射出令人炫目的银白光晕。街角的小酒馆里传出低沉的琴声，空气中弥漫着松香与浓咖啡的气息。我们停下脚步，不再追问那些繁复的终局目的。生命本身就像这一条没有尽头的海岸线，不断被海浪冲刷，却始终以最初的姿态横亘在大地与深渊之间。",
+  "随着夜色再度深沉，远方的灯塔开始在黑暗中闪烁有规律的光柱。这道光芒穿透了海面的迷雾，照亮了漂浮在浪尖上的泡沫。所有的思考在这一刻变得纯粹而辽阔，不需要任何列项与总结，只是静静地存在着，等待着晨曦的下一次降临与重逢。"
 ];
 
-let exhibitIndex = 1;
-let currentWordIndex = 0;
+let totalWordCount = 0;
+let fullManuscriptContext = "";
+let paragraphCounter = 1;
+let fallbackIndex = 0;
 
-async function streamTypewriter(fullText, metaData) {
-  const dropCapElem = document.getElementById('drop-cap-char');
-  const streamElem = document.getElementById('text-stream');
-  const watermarkElem = document.getElementById('watermark-num');
-  const exhibitLabelElem = document.getElementById('exhibit-label');
-  const titleElem = document.getElementById('chapter-title');
-  const subtitleElem = document.getElementById('chapter-subtitle');
-  const cursorElem = document.getElementById('type-cursor');
-  const timerDisplay = document.getElementById('timer-display');
+async function streamNewParagraph(textSegment, isFirstParagraph = false) {
+  const contentContainer = document.getElementById('article-content');
+  const wordCounterElem = document.getElementById('word-counter');
 
-  // 更新左侧元数据
-  const exhibitStr = String(exhibitIndex).padStart(2, '0');
-  watermarkElem.innerText = exhibitStr;
-  exhibitLabelElem.innerText = `Exhibit No. ${exhibitStr}`;
-  titleElem.innerText = metaData.lemma;
-  subtitleElem.innerText = `${metaData.translit} · ${metaData.definition}`;
+  // 创建新段落容器
+  const pElem = document.createElement('p');
+  pElem.className = 'paragraph-block';
 
-  // 提取首字用于 Drop Cap
-  const firstChar = fullText.charAt(0);
-  const remainingText = fullText.slice(1);
-  
-  dropCapElem.innerText = firstChar;
-  streamElem.innerText = "";
-  if (cursorElem) cursorElem.style.display = "inline-block";
+  // 首段特殊处理首字下沉 Drop Cap
+  if (isFirstParagraph) {
+    const firstChar = textSegment.charAt(0);
+    const restText = textSegment.slice(1);
 
-  // 逐字优雅流式打字输出
-  for (let i = 0; i < remainingText.length; i++) {
-    streamElem.innerText += remainingText[i];
-    await new Promise(r => setTimeout(r, 40));
+    pElem.innerHTML = `<span class="drop-cap">${firstChar}</span><span class="p-text"></span><span class="type-cursor"></span>`;
+    contentContainer.appendChild(pElem);
+
+    const spanText = pElem.querySelector('.p-text');
+    const cursor = pElem.querySelector('.type-cursor');
+
+    totalWordCount += 1;
+    wordCounterElem.innerText = `· ${totalWordCount} 字已流式生成`;
+
+    for (let i = 0; i < restText.length; i++) {
+      spanText.innerText += restText[i];
+      totalWordCount += 1;
+      wordCounterElem.innerText = `· ${totalWordCount} 字已流式生成`;
+      
+      // 平滑向下滚动视口，让当前打字位置始终处于最佳阅读区域
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+      });
+      await new Promise(r => setTimeout(r, 42));
+    }
+    cursor.remove();
+
+  } else {
+    // 后续段落自然首行缩进流式呈现
+    pElem.innerHTML = `<span class="p-text"></span><span class="type-cursor"></span>`;
+    contentContainer.appendChild(pElem);
+
+    const spanText = pElem.querySelector('.p-text');
+    const cursor = pElem.querySelector('.type-cursor');
+
+    for (let i = 0; i < textSegment.length; i++) {
+      spanText.innerText += textSegment[i];
+      totalWordCount += 1;
+      wordCounterElem.innerText = `· ${totalWordCount} 字已流式生成`;
+
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+      });
+      await new Promise(r => setTimeout(r, 42));
+    }
+    cursor.remove();
   }
-  if (cursorElem) cursorElem.style.display = "none";
 
-  // 展厅驻留阅读 6 秒倒计时
-  for (let t = 6; t > 0; t--) {
-    if (timerDisplay) timerDisplay.innerText = `NEXT EXHIBIT IN ${t}S`;
-    await new Promise(r => setTimeout(r, 1000));
-  }
-
-  if (timerDisplay) timerDisplay.innerText = "REFLECTING...";
+  // 段落结束后的自然呼吸停顿 (1.8秒)
+  await new Promise(r => setTimeout(r, 1800));
 }
 
-async function runGenerativeLoop() {
+async function runInfiniteManuscriptLoop() {
+  // 移除初始占位段落
+  const initialPlaceholder = document.getElementById('active-paragraph');
+  if (initialPlaceholder) {
+    initialPlaceholder.remove();
+  }
+
   while (true) {
-    let data;
-    
-    // 尝试拉取线上云端 API
+    let nextSegment = "";
+
     try {
+      // 携带长文最近的上下文，请求 API 继续流式延展长文
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-      const response = await fetch("https://buleegasy-greek-deng.hf.space/api/generate", {
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ context: fullManuscriptContext }),
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-      
+
       if (response.ok) {
-        data = await response.json();
-      } else {
-        throw new Error("fallback");
+        const data = await response.json();
+        nextSegment = data.segment || "";
       }
     } catch (e) {
-      // 本地高熵动态流转
-      data = GREEK_WORDS[currentWordIndex % GREEK_WORDS.length];
-      currentWordIndex++;
+      // 容错机制
+      nextSegment = LITERARY_STREAMS[fallbackIndex % LITERARY_STREAMS.length];
+      fallbackIndex++;
     }
 
-    // 优雅淡出
-    const frame = document.getElementById('editorial-frame');
-    if (frame) {
-      frame.classList.add('fade-out');
-      await new Promise(r => setTimeout(r, 600));
-      frame.classList.remove('fade-out');
-      frame.classList.add('fade-in');
+    if (!nextSegment || nextSegment.length < 15) {
+      nextSegment = LITERARY_STREAMS[fallbackIndex % LITERARY_STREAMS.length];
+      fallbackIndex++;
     }
 
-    // 启动流式渲染
-    await streamTypewriter(data.content, data);
-    exhibitIndex++;
+    // 更新全文上下文缓存（用于后续自回归连贯性）
+    fullManuscriptContext = (fullManuscriptContext + " " + nextSegment).slice(-500);
+
+    // 逐字流式打入文章中
+    await streamNewParagraph(nextSegment, paragraphCounter === 1);
+    paragraphCounter++;
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 立即启动自激活动态循环
-  setTimeout(runGenerativeLoop, 300);
+  setTimeout(runInfiniteManuscriptLoop, 400);
 });

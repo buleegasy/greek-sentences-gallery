@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我在希腊蹬随机的句子 · 24H 连续艺术装置</title>
+  <title>我在希腊蹬随机的句子 · 24H 流式长文艺术装置</title>
   
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
@@ -12,38 +12,47 @@
 </head>
 <body>
 
+  <!-- 顶部极简展陈导航 -->
   <header>
-    <div class="logo en-text">GALLERY · GREEK_DENG</div>
-    <div class="collection-name en-text">SmolLM2-360M Autonomous Collection</div>
+    <div class="logo en-text">MANUSCRIPT · GREEK_DENG</div>
+    <div class="collection-name en-text">24/7 Continuous Streaming Literature</div>
   </header>
 
-  <main class="single-exhibit-container">
-    <div class="editorial-frame" id="editorial-frame">
-      <div class="watermark-number en-text" id="watermark-num">01</div>
+  <!-- 40vw 巨型半透明背景水印 -->
+  <div class="watermark-bg en-text" id="watermark-bg">Ω</div>
+
+  <!-- 流式长文核心排版区域 -->
+  <main class="manuscript-wrapper">
+    <article class="manuscript-article">
       
-      <div class="meta-column">
-        <div class="meta-top">
-          <span class="exhibit-label en-text" id="exhibit-label">Exhibit No. 01</span>
-          <h2 class="chapter-title" id="chapter-title">λόγος</h2>
-          <h3 class="chapter-subtitle" id="chapter-subtitle">logos · word & reason</h3>
-        </div>
-        <div class="meta-bottom en-text">
-          <span>2026 · CONTINUOUS WAVE</span><br>
-          <span style="font-style: italic;">Autonomous Consciousness Stream</span>
-        </div>
+      <div class="article-header">
+        <span class="manuscript-tag en-text">Exhibit No. 01 · Autonomous Stream</span>
+        <h1 class="article-title">我在希腊蹬随机的句子。</h1>
+        <p class="article-subtitle en-text">"Thoughts materialized, borders crossed. Continuous 24-hour literature generation."</p>
+        <div class="title-divider"></div>
       </div>
-      
-      <div class="content-column">
-        <div class="artwork-text" id="content-body">
-          <span class="drop-cap" id="drop-cap-char">在</span><span id="text-stream">静谧的时刻，微风穿过古老的柱廊，所有的语言在此凝固为永恒的思考。</span><span class="type-cursor" id="type-cursor"></span>
-        </div>
+
+      <!-- 实时生长的长文正文流 -->
+      <div class="article-content" id="article-content">
+        <!-- 首段与后续段落将由 JS 流式实时生长并注入 -->
+        <p class="paragraph-block" id="active-paragraph">
+          <span class="drop-cap" id="first-drop-cap">在</span><span id="text-flow-stream"></span><span class="type-cursor" id="type-cursor"></span>
+        </p>
       </div>
-    </div>
+
+    </article>
   </main>
 
-  <footer>
-    <div class="status-left"><span class="live-dot"></span><span id="cycle-status">24/7 AUTONOMOUS GENERATIVE INSTALLATION</span></div>
-    <div class="en-text timer-display" id="timer-display">NEXT EXHIBIT IN 8S</div>
+  <!-- 底部固定实时状态栏 -->
+  <footer class="manuscript-footer">
+    <div class="status-left">
+      <span class="live-dot"></span>
+      <span id="stream-status">24/7 AUTONOMOUS STREAMING ACTIVE</span>
+      <span class="word-counter en-text" id="word-counter">· 0 WORDS GENERATED</span>
+    </div>
+    <div class="status-right en-text">
+      <span>SMOLLM2-360M BASE · PURE CHINESE STREAM</span>
+    </div>
   </footer>
 
   <script type="module" src="js/gallery.js"></script>
