@@ -1,123 +1,151 @@
-/* Continuous Long-form Manuscript Layout */
+/* Single-Frame Non-Scrollable Editorial Layout */
 
-.manuscript-wrapper {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  padding: 130px 24px 180px;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 1;
+html, body.single-page-locked {
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  user-select: none;
 }
 
-.manuscript-article {
-  width: 100%;
-  max-width: 820px;
-  position: relative;
-}
-
-/* 巨型背景半透明水印 */
-.watermark-bg {
+/* 42vw 巨型半透明背景水印编号 */
+.watermark-number {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 40vw;
+  font-size: 42vw;
   font-family: var(--font-serif-en);
   font-weight: 300;
   color: var(--ink);
-  opacity: 0.02;
+  opacity: 0.025;
   z-index: 0;
   pointer-events: none;
   line-height: 1;
   user-select: none;
+  transition: opacity 0.6s ease;
 }
 
-/* 文章头部 */
-.article-header {
-  text-align: center;
-  margin-bottom: 4.5rem;
+/* 视口居中画框（严格锁死一屏，铺满屏幕） */
+.single-viewport-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 80px 50px;
+  position: relative;
+  z-index: 1;
 }
 
-.manuscript-tag {
+.editorial-frame {
+  width: 100%;
+  max-width: 1200px;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 56px;
+  align-items: center;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.editorial-frame.fade-out {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.editorial-frame.fade-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 左侧元数据栏 */
+.meta-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  min-height: 280px;
+  border-right: 1px solid var(--dust);
+  padding-right: 36px;
+  text-align: right;
+}
+
+.exhibit-label {
   font-size: 0.75rem;
-  letter-spacing: 0.35em;
+  letter-spacing: 0.3em;
   color: var(--dust);
   display: block;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.8rem;
   text-transform: uppercase;
 }
 
-.article-title {
-  font-size: 3.5rem;
-  font-weight: 300;
-  letter-spacing: 0.15em;
+.chapter-title {
+  font-size: 2.8rem;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
   color: var(--ink);
-  margin-bottom: 1.2rem;
+  margin-bottom: 0.6rem;
   font-family: var(--font-serif-zh);
 }
 
-.article-subtitle {
-  font-size: 1.05rem;
+.chapter-subtitle {
+  font-size: 0.95rem;
   letter-spacing: 0.15em;
   color: var(--dust);
+  line-height: 1.5;
   font-style: italic;
-  margin-bottom: 2.5rem;
+}
+
+.meta-bottom {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--dust);
   line-height: 1.6;
+  text-transform: uppercase;
 }
 
-.title-divider {
-  width: 60px;
-  height: 1px;
-  background: var(--dust);
-  margin: 0 auto;
-  opacity: 0.6;
+/* 右侧满幅正文（单屏呈现铺满视觉） */
+.content-column {
+  display: flex;
+  align-items: center;
 }
 
-/* 正文段落长流 */
-.article-content {
-  width: 100%;
-}
-
-.paragraph-block {
-  font-size: 1.35rem;
-  line-height: 2.6;
-  letter-spacing: 0.06em;
+.artwork-paragraph {
+  font-size: 1.85rem;
+  line-height: 2.3;
+  letter-spacing: 0.07em;
   color: var(--ink);
   text-align: justify;
-  margin-bottom: 2.2rem;
-  text-indent: 2.2em;
-  position: relative;
+  margin: 0;
   word-wrap: break-word;
-  transition: opacity 0.4s ease;
 }
 
-/* 第一段取消缩进并添加大首字下沉 */
-.paragraph-block:first-of-type {
-  text-indent: 0;
-}
-
-/* 经典朱砂红首字下沉 Drop Cap */
+/* 朱砂红 4.6rem Drop Cap 首字下沉 */
 .drop-cap {
   float: left;
-  font-size: 4.6rem;
+  font-size: 4.8rem;
   line-height: 0.85;
-  padding-top: 0.25rem;
-  padding-right: 0.85rem;
+  padding-top: 0.35rem;
+  padding-right: 0.95rem;
   font-family: var(--font-serif-zh);
   font-weight: 300;
   color: var(--rust);
 }
 
-/* 实时打字机光标 */
+/* 闪烁打字机光标 */
 .type-cursor {
   display: inline-block;
-  width: 2.5px;
+  width: 3px;
   height: 1.25em;
   background-color: var(--rust);
   vertical-align: text-bottom;
-  margin-left: 5px;
+  margin-left: 6px;
   animation: blinkCursor 0.8s infinite;
 }
 
@@ -126,15 +154,15 @@
   50% { opacity: 0; }
 }
 
-/* 底部状态栏 */
+/* 底部固定状态栏 */
 .manuscript-footer {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 16px 50px;
-  background: rgba(248, 245, 239, 0.92);
-  backdrop-filter: blur(10px);
+  padding: 18px 50px;
+  background: rgba(248, 245, 239, 0.94);
+  backdrop-filter: blur(12px);
   border-top: 1px solid rgba(181, 171, 152, 0.3);
   display: flex;
   justify-content: space-between;
@@ -150,7 +178,7 @@
 .status-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .live-dot {
@@ -168,36 +196,49 @@
   50% { opacity: 1; }
 }
 
-.word-counter {
+.reading-timer {
   color: var(--rust);
   font-weight: 600;
 }
 
-/* Mobile Responsive */
+/* 移动端适配 */
 @media (max-width: 768px) {
-  .manuscript-wrapper {
-    padding: 90px 18px 120px;
+  .single-viewport-container {
+    padding: 70px 20px 80px;
   }
-  
-  .article-title {
-    font-size: 2.2rem;
+
+  .editorial-frame {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
-  
-  .paragraph-block {
-    font-size: 1.15rem;
-    line-height: 2.2;
-    margin-bottom: 1.6rem;
+
+  .meta-column {
+    border-right: none;
+    border-bottom: 1px solid var(--dust);
+    padding-right: 0;
+    padding-bottom: 15px;
+    min-height: auto;
+    text-align: left;
   }
-  
+
+  .chapter-title {
+    font-size: 2rem;
+  }
+
+  .artwork-paragraph {
+    font-size: 1.25rem;
+    line-height: 1.9;
+  }
+
   .drop-cap {
-    font-size: 3.6rem;
+    font-size: 3.5rem;
   }
-  
+
   .manuscript-footer {
     padding: 12px 20px;
     font-size: 0.65rem;
   }
-  
+
   .status-right {
     display: none;
   }

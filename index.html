@@ -6,57 +6,63 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>我在希腊蹬随机的句子 · 24H 纯单字种子流式长文</title>
+  <title>我在希腊蹬随机的句子 · 单屏满幅艺术装置</title>
   
-  <link rel="stylesheet" href="css/tokens.css?v=5">
-  <link rel="stylesheet" href="css/base.css?v=5">
-  <link rel="stylesheet" href="css/gallery.css?v=5">
-  <link rel="stylesheet" href="css/animations.css?v=5">
+  <link rel="stylesheet" href="css/tokens.css?v=6">
+  <link rel="stylesheet" href="css/base.css?v=6">
+  <link rel="stylesheet" href="css/gallery.css?v=6">
+  <link rel="stylesheet" href="css/animations.css?v=6">
 </head>
-<body>
+<body class="single-page-locked">
 
   <!-- 顶部极简展陈导航 -->
   <header>
-    <div class="logo en-text">MANUSCRIPT · GREEK_DENG</div>
-    <div class="collection-name en-text">24/7 Pure Seed Autoregressive Stream</div>
+    <div class="logo en-text">EXHIBITION · GREEK_DENG</div>
+    <div class="collection-name en-text">24/7 Single-Frame Autonomous Installation</div>
   </header>
 
-  <!-- 40vw 巨型半透明背景水印 -->
-  <div class="watermark-bg en-text" id="watermark-bg">Ω</div>
+  <!-- 42vw 巨型半透明背景水印编号 -->
+  <div class="watermark-number en-text" id="watermark-num">01</div>
 
-  <!-- 流式长文核心排版区域 -->
-  <main class="manuscript-wrapper">
-    <article class="manuscript-article">
+  <!-- 单屏满幅高定画框（绝对锁定一屏，物理禁止任何滚动） -->
+  <main class="single-viewport-container">
+    <div class="editorial-frame" id="editorial-frame">
       
-      <div class="article-header">
-        <span class="manuscript-tag en-text">Exhibit No. 01 · Pure Single Seed Stream</span>
-        <h1 class="article-title">我在希腊蹬随机的句子。</h1>
-        <p class="article-subtitle en-text">"Pure single-seed autoregressive flow. Zero templates, zero frameworks."</p>
-        <div class="title-divider"></div>
-      </div>
+      <!-- 左侧元数据栏 -->
+      <aside class="meta-column">
+        <div class="meta-top">
+          <span class="exhibit-label en-text" id="exhibit-label">Exhibit No. 01</span>
+          <h2 class="chapter-title" id="greek-lemma">λόγος</h2>
+          <h3 class="chapter-subtitle en-text" id="greek-meta">logos · Single Seed</h3>
+        </div>
+        <div class="meta-bottom en-text">
+          <span>SMOLLM2-360M BASE</span><br>
+          <span style="font-style: italic;">Pure Autoregressive Flow</span>
+        </div>
+      </aside>
 
-      <!-- 实时生长的长文正文流 -->
-      <div class="article-content" id="article-content">
-        <p class="paragraph-block" id="active-paragraph">
-          <span class="drop-cap" id="first-drop-cap">在</span><span id="text-flow-stream"></span><span class="type-cursor" id="type-cursor"></span>
+      <!-- 右侧满幅居中正文（仅显示当前生成的一页，铺满屏幕） -->
+      <section class="content-column">
+        <p class="artwork-paragraph">
+          <span class="drop-cap" id="drop-cap-char">在</span><span id="text-stream"></span><span class="type-cursor" id="type-cursor"></span>
         </p>
-      </div>
+      </section>
 
-    </article>
+    </div>
   </main>
 
   <!-- 底部固定实时状态栏 -->
   <footer class="manuscript-footer">
     <div class="status-left">
       <span class="live-dot"></span>
-      <span id="stream-status">CONNECTING TO PURE SEED PIPELINE...</span>
-      <span class="word-counter en-text" id="word-counter">· 0 WORDS GENERATED</span>
+      <span id="stream-status">SINGLE-FRAME STREAM ACTIVE</span>
+      <span class="reading-timer en-text" id="timer-display">· STREAMING...</span>
     </div>
     <div class="status-right en-text">
-      <span>SMOLLM2-360M BASE · PURE AUTOREGRESSION</span>
+      <span>NO SCROLL · SINGLE PAGE AUTO-CYCLE</span>
     </div>
   </footer>
 
-  <script type="module" src="js/gallery.js?v=force_update_v5"></script>
+  <script type="module" src="js/gallery.js?v=single_page_v6"></script>
 </body>
 </html>
