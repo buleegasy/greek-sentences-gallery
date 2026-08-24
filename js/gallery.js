@@ -103,8 +103,13 @@ async function syncState() {
         const isNearBottom = (currentScrollY - targetScrollY) < 200;
 
         if (needsMore || isNearBottom) {
+          if (streamStatusElem && state.blocks.length === 0) {
+            streamStatusElem.innerText = "GENERATING INITIAL KINETIC BLOCKS (CPU)...";
+          }
           gradioClient.predict("/trigger", []).catch(e => console.error("Trigger fail", e));
         }
+      } else if (state.blocks.length === 0 && streamStatusElem) {
+        streamStatusElem.innerText = "GENERATING INITIAL KINETIC BLOCKS (CPU)...";
       }
     }
   } catch (e) {
