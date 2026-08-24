@@ -1,6 +1,6 @@
-/* Stable Horizontal Sliding Gallery Layout */
+/* Continuous Vertical Teleprompter / Rolling Subtitle Layout */
 
-html, body.gallery-viewport-locked {
+html, body.teleprompter-locked {
   height: 100vh !important;
   width: 100vw !important;
   overflow: hidden !important;
@@ -12,40 +12,9 @@ html, body.gallery-viewport-locked {
   user-select: none;
 }
 
-/* 全屏画廊主视口 */
-.gallery-viewport {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-}
-
-/* 稳定横向滑轨（贝塞尔物理缓动） */
-.gallery-track {
-  display: flex;
-  height: 100vh;
-  width: max-content;
-  transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-}
-
-/* 单个字块 Slide（单屏满幅呈现） */
-.slide {
-  width: 100vw;
-  height: 100vh;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 80px 50px;
-  box-sizing: border-box;
-  position: relative;
-}
-
-/* 42vw 巨型半透明背景水印编号 */
+/* 42vw 巨型半透明背景水印 */
 .watermark-number {
-  position: absolute;
+  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -53,82 +22,75 @@ html, body.gallery-viewport-locked {
   font-family: var(--font-serif-en);
   font-weight: 300;
   color: var(--ink);
-  opacity: 0.025;
+  opacity: 0.022;
   z-index: 0;
   pointer-events: none;
   line-height: 1;
   user-select: none;
 }
 
-/* 字块高定画框 */
-.editorial-frame {
-  width: 100%;
-  max-width: 1200px;
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 56px;
-  align-items: center;
+/* 电影级纵向滚动视口（顶部与底部带有柔和渐隐羽化） */
+.teleprompter-viewport {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   position: relative;
+  display: flex;
+  justify-content: center;
   z-index: 1;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
 }
 
-/* 左侧元数据栏 */
-.meta-column {
+/* 连续匀速向上滑轨 */
+.teleprompter-track {
+  width: 100%;
+  max-width: 880px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-  min-height: 280px;
-  border-right: 1px solid var(--dust);
-  padding-right: 36px;
-  text-align: right;
+  box-sizing: border-box;
+  padding: 0 40px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100vh);
+  will-change: transform;
 }
 
-.exhibit-label {
-  font-size: 0.75rem;
+/* 单个滚动字块 */
+.rolling-block {
+  width: 100%;
+  margin-bottom: 7.5rem;
+  position: relative;
+}
+
+.block-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid rgba(181, 171, 152, 0.4);
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.8rem;
+}
+
+.block-tag {
+  font-size: 0.78rem;
   letter-spacing: 0.3em;
   color: var(--dust);
-  display: block;
-  margin-bottom: 0.8rem;
   text-transform: uppercase;
 }
 
-.chapter-title {
-  font-size: 2.8rem;
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: 0.08em;
+.block-seed {
+  font-size: 1.3rem;
   color: var(--ink);
-  margin-bottom: 0.6rem;
   font-family: var(--font-serif-zh);
+  letter-spacing: 0.1em;
 }
 
-.chapter-subtitle {
-  font-size: 0.95rem;
-  letter-spacing: 0.15em;
-  color: var(--dust);
-  line-height: 1.5;
-  font-style: italic;
-}
-
-.meta-bottom {
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  color: var(--dust);
-  line-height: 1.6;
-  text-transform: uppercase;
-}
-
-/* 右侧满幅字块正文 */
-.content-column {
-  display: flex;
-  align-items: center;
-}
-
-.artwork-paragraph {
-  font-size: 1.85rem;
-  line-height: 2.3;
-  letter-spacing: 0.07em;
+.block-text {
+  font-size: 2.1rem;
+  line-height: 2.4;
+  letter-spacing: 0.08em;
   color: var(--ink);
   text-align: justify;
   margin: 0;
@@ -138,29 +100,13 @@ html, body.gallery-viewport-locked {
 /* 朱砂红 4.8rem Drop Cap 首字下沉 */
 .drop-cap {
   float: left;
-  font-size: 4.8rem;
+  font-size: 5rem;
   line-height: 0.85;
   padding-top: 0.35rem;
-  padding-right: 0.95rem;
+  padding-right: 1rem;
   font-family: var(--font-serif-zh);
   font-weight: 300;
   color: var(--rust);
-}
-
-/* 闪烁打字机光标 */
-.type-cursor {
-  display: inline-block;
-  width: 3px;
-  height: 1.25em;
-  background-color: var(--rust);
-  vertical-align: text-bottom;
-  margin-left: 6px;
-  animation: blinkCursor 0.8s infinite;
-}
-
-@keyframes blinkCursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
 }
 
 /* 底部固定状态栏 */
@@ -205,42 +151,24 @@ html, body.gallery-viewport-locked {
   50% { opacity: 1; }
 }
 
-.reading-timer {
+.speed-indicator {
   color: var(--rust);
   font-weight: 600;
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-  .slide {
-    padding: 70px 20px 80px;
+  .teleprompter-track {
+    padding: 0 20px;
   }
 
-  .editorial-frame {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .meta-column {
-    border-right: none;
-    border-bottom: 1px solid var(--dust);
-    padding-right: 0;
-    padding-bottom: 15px;
-    min-height: auto;
-    text-align: left;
-  }
-
-  .chapter-title {
-    font-size: 2rem;
-  }
-
-  .artwork-paragraph {
-    font-size: 1.25rem;
-    line-height: 1.9;
+  .block-text {
+    font-size: 1.35rem;
+    line-height: 2.1;
   }
 
   .drop-cap {
-    font-size: 3.5rem;
+    font-size: 3.6rem;
   }
 
   .manuscript-footer {
