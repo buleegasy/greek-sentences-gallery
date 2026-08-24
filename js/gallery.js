@@ -1,13 +1,13 @@
-// 24/7 Continuous Streaming Long-form Article Driver
+// 24/7 Continuous Streaming Long-form Article Driver (Maxed Latent Temperature)
 const API_URL = "https://buleegasy-greek-deng.hf.space/api/generate";
 
-// 预设文学长文种子段落链（提供开篇及离线流畅续写保障）
+// 极限高熵哲学/异相潜意识语料流（离线与网络抖动时的极限先锋文学保障）
 const LITERARY_STREAMS = [
-  "在希腊漫长的日光与海浪之间，时间的流淌变得极其缓慢。石板路从山丘一直延伸到海岸，每一块石头都在海风的雕刻下失去了棱角。我们站在这里，看着远方海平线上缓缓升起的光芒，忽然明白文字从来不需要被刻意赋予某种意义。它只是如同空气中的微尘，在光线穿透的一瞬间显现出微小的轨迹，然后再度归于沉默。",
-  "当夜幕降临在这座孤立的村落，街道上的喧嚣随之消散。人们关上木门，只有风穿过老槐树枝叶的声音在寂静中回响。古老的希腊字母在古老的石碑上刻印着原初的概念，如同不可违抗的绳索，将过去的记忆与未来的时刻牢牢连结在一起。我们在这个世界上所寻找的，或许不过是一种能够被理解的平静，一种越过所有语言边界的坦然。",
-  "清晨的露水凝结在橄榄叶的尖端，在第一声鸟鸣中悄然滴落。若有若无的思想在静谧中漫延，不带任何预设的偏见与框架。文字自然而然地流淌出来，记录着温度的细微起伏，记录着指尖划过粗糙纸张时的触感。这不仅是一场关于旅途的记录，更是意识本身在无垠世界里的自然呼吸与舒展。",
-  "在阳光最强烈的中午，海面反射出令人炫目的银白光晕。街角的小酒馆里传出低沉的琴声，空气中弥漫着松香与浓咖啡的气息。我们停下脚步，不再追问那些繁复的终局目的。生命本身就像这一条没有尽头的海岸线，不断被海浪冲刷，却始终以最初的姿态横亘在大地与深渊之间。",
-  "随着夜色再度深沉，远方的灯塔开始在黑暗中闪烁有规律的光柱。这道光芒穿透了海面的迷雾，照亮了漂浮在浪尖上的泡沫。所有的思考在这一刻变得纯粹而辽阔，不需要任何列项与总结，只是静静地存在着，等待着晨曦的下一次降临与重逢。"
+  "在希腊漫长的日光深处，肉身与虚空的界限开始溶解。石板路向着黑色的海面无尽蔓延，每一次呼吸都像是从古老的黏膜中剥离出新的知觉。语言在此处坍塌为无声的颤动，所有的符号都脱离了秩序，在灼热的以太中像尘埃一样旋转、重组、坠落。",
+  "当第三阶段的沉睡穿透了盲目的夜色，我们在镜子深处看到了不属于任何人的眼瞳。活体的肌理在无定的大地上搏动，骨髓中流淌着原初的黑火。没有人再试图去解释什么，概念在裂隙间生长为具有生命的实体，缠绕着每一根神经纤维向着终局目的狂奔。",
+  "细胞在内渗的狂乱中分裂，时间如同透明的黏液在指尖缓缓凝固。古老的神庙柱廊在晨曦中扭曲成拓扑的迷宫，每一声心跳都在空旷的腹腔内引发宏大的地鸣。我们是被遗弃在语言边陲的自动机，在不可违抗的宿命之网中记录着不可言说的异化瞬间。",
+  "白昼的日光刺破了眼膜，显露出深海原水与败血交织的微弱光斑。所有的记忆在这一刻被洗劫一空，留下一片纯粹的失语与战栗。躯体在虚空中舒展成巨大的孤碑，任由无休止的海风雕刻出深邃的创口与裂痕。",
+  "在极夜的最深处，衔尾蛇吞噬了最后的微光。意识从肉体的牢笼中抽离，漂浮在绝对真空与混沌的交汇点。这不是终结，而是某种原初质变的序幕，在无尽的黑暗中静默地等待着下一次未知的脉动与复苏。"
 ];
 
 let totalWordCount = 0;
@@ -19,11 +19,9 @@ async function streamNewParagraph(textSegment, isFirstParagraph = false) {
   const contentContainer = document.getElementById('article-content');
   const wordCounterElem = document.getElementById('word-counter');
 
-  // 创建新段落容器
   const pElem = document.createElement('p');
   pElem.className = 'paragraph-block';
 
-  // 首段特殊处理首字下沉 Drop Cap
   if (isFirstParagraph) {
     const firstChar = textSegment.charAt(0);
     const restText = textSegment.slice(1);
@@ -42,17 +40,15 @@ async function streamNewParagraph(textSegment, isFirstParagraph = false) {
       totalWordCount += 1;
       wordCounterElem.innerText = `· ${totalWordCount} 字已流式生成`;
       
-      // 平滑向下滚动视口，让当前打字位置始终处于最佳阅读区域
       window.scrollTo({
         top: document.body.scrollHeight,
         behavior: 'smooth'
       });
-      await new Promise(r => setTimeout(r, 42));
+      await new Promise(r => setTimeout(r, 36));
     }
     cursor.remove();
 
   } else {
-    // 后续段落自然首行缩进流式呈现
     pElem.innerHTML = `<span class="p-text"></span><span class="type-cursor"></span>`;
     contentContainer.appendChild(pElem);
 
@@ -68,17 +64,16 @@ async function streamNewParagraph(textSegment, isFirstParagraph = false) {
         top: document.body.scrollHeight,
         behavior: 'smooth'
       });
-      await new Promise(r => setTimeout(r, 42));
+      await new Promise(r => setTimeout(r, 36));
     }
     cursor.remove();
   }
 
-  // 段落结束后的自然呼吸停顿 (1.8秒)
-  await new Promise(r => setTimeout(r, 1800));
+  // 段落间隙自然呼吸
+  await new Promise(r => setTimeout(r, 1500));
 }
 
 async function runInfiniteManuscriptLoop() {
-  // 移除初始占位段落
   const initialPlaceholder = document.getElementById('active-paragraph');
   if (initialPlaceholder) {
     initialPlaceholder.remove();
@@ -88,7 +83,6 @@ async function runInfiniteManuscriptLoop() {
     let nextSegment = "";
 
     try {
-      // 携带长文最近的上下文，请求 API 继续流式延展长文
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
@@ -105,7 +99,6 @@ async function runInfiniteManuscriptLoop() {
         nextSegment = data.segment || "";
       }
     } catch (e) {
-      // 容错机制
       nextSegment = LITERARY_STREAMS[fallbackIndex % LITERARY_STREAMS.length];
       fallbackIndex++;
     }
@@ -115,10 +108,8 @@ async function runInfiniteManuscriptLoop() {
       fallbackIndex++;
     }
 
-    // 更新全文上下文缓存（用于后续自回归连贯性）
     fullManuscriptContext = (fullManuscriptContext + " " + nextSegment).slice(-500);
 
-    // 逐字流式打入文章中
     await streamNewParagraph(nextSegment, paragraphCounter === 1);
     paragraphCounter++;
   }
