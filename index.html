@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>文字画廊 · Text Gallery</title>
+  <title>我在希腊蹬随机的句子 · 24H 连续艺术装置</title>
   
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
@@ -13,45 +13,39 @@
 <body>
 
   <header>
-    <div class="logo en-text">GALLERY</div>
-    <div class="collection-name en-text">Curated Collection</div>
+    <div class="logo en-text">GALLERY · GREEK_DENG</div>
+    <div class="collection-name en-text">SmolLM2-360M Autonomous Collection</div>
   </header>
 
-  <div class="scroll-indicator">
-    <div class="scroll-line animate-pulse"></div>
-  </div>
-
-  <button id="autoplay-btn" class="autoplay-btn en-text">[ AUTO PLAY ]</button>
-
-  <section class="gallery-section">
-    <div class="gallery-wrapper">
+  <main class="single-exhibit-container">
+    <div class="editorial-frame" id="editorial-frame">
+      <div class="watermark-number en-text" id="watermark-num">01</div>
       
-      <div class="slide intro-slide">
-        <div class="title-content">
-          <h1 class="main-title">我在希腊蹬随机的句子。</h1>
-          <p class="subtitle en-text" style="font-style: italic;">"Thoughts materialized, borders crossed."</p>
-          <div class="title-line"></div>
+      <div class="meta-column">
+        <div class="meta-top">
+          <span class="exhibit-label en-text" id="exhibit-label">Exhibit No. 01</span>
+          <h2 class="chapter-title" id="chapter-title">λόγος</h2>
+          <h3 class="chapter-subtitle" id="chapter-subtitle">logos · word & reason</h3>
+        </div>
+        <div class="meta-bottom en-text">
+          <span>2026 · CONTINUOUS WAVE</span><br>
+          <span style="font-style: italic;">Autonomous Consciousness Stream</span>
         </div>
       </div>
       
-      <!-- Artworks injected here -->
-      
-      <div class="slide fin-slide">
-        <div class="fin-content gsap-reveal">
-          <div class="fin-line"></div>
-          <h2 class="fin-title en-text" style="font-style: italic;">Fin.</h2>
-          <a href="#" class="back-to-top en-text">Return to Top</a>
+      <div class="content-column">
+        <div class="artwork-text" id="content-body">
+          <span class="drop-cap" id="drop-cap-char">在</span><span id="text-stream">静谧的时刻，微风穿过古老的柱廊，所有的语言在此凝固为永恒的思考。</span><span class="type-cursor" id="type-cursor"></span>
         </div>
       </div>
-      
     </div>
-  </section>
+  </main>
 
-  <script src="https://unpkg.com/lenis@1.1.2/dist/lenis.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  
+  <footer>
+    <div class="status-left"><span class="live-dot"></span><span id="cycle-status">24/7 AUTONOMOUS GENERATIVE INSTALLATION</span></div>
+    <div class="en-text timer-display" id="timer-display">NEXT EXHIBIT IN 8S</div>
+  </footer>
+
   <script type="module" src="js/gallery.js"></script>
-  
 </body>
 </html>
