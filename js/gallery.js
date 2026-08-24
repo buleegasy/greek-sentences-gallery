@@ -1,7 +1,7 @@
 // 24/7 Continuous Vertical Teleprompter Rolling Engine
 // 电影字幕级平稳纵向滚动 · 零驻留停顿 · 永不间断流淌 · 全球多端时空同步
 
-import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+import { Client } from "./gradio.js";
 
 let gradioClient = null;
 const trackElem = document.getElementById('teleprompter-track');
