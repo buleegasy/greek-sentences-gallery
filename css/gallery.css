@@ -59,56 +59,22 @@ html, body.teleprompter-locked {
   will-change: transform;
 }
 
-/* 单个滚动字块 */
+/* 单个滚动字块（自然段落） */
 .rolling-block {
   width: 100%;
-  margin-bottom: 7.5rem;
+  margin-bottom: 2.5rem; /* 自然段落间距 */
   position: relative;
-}
-
-.block-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  border-bottom: 1px solid rgba(181, 171, 152, 0.4);
-  padding-bottom: 0.8rem;
-  margin-bottom: 1.8rem;
-}
-
-.block-tag {
-  font-size: 0.78rem;
-  letter-spacing: 0.3em;
-  color: var(--dust);
-  text-transform: uppercase;
-}
-
-.block-seed {
-  font-size: 1.3rem;
-  color: var(--ink);
-  font-family: var(--font-serif-zh);
-  letter-spacing: 0.1em;
 }
 
 .block-text {
   font-size: 2.1rem;
-  line-height: 2.4;
+  line-height: 2.2;
   letter-spacing: 0.08em;
   color: var(--ink);
   text-align: justify;
   margin: 0;
   word-wrap: break-word;
-}
-
-/* 朱砂红 4.8rem Drop Cap 首字下沉 */
-.drop-cap {
-  float: left;
-  font-size: 5rem;
-  line-height: 0.85;
-  padding-top: 0.35rem;
-  padding-right: 1rem;
-  font-family: var(--font-serif-zh);
-  font-weight: 300;
-  color: var(--rust);
+  text-indent: 2em; /* 首行缩进，更像长文自然段 */
 }
 
 /* 底部固定状态栏 */

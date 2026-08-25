@@ -32,23 +32,12 @@ async function initClient() {
 
 function appendBlockToDOM(block) {
   const cleanText = block.text.trim();
-  const firstChar = cleanText.charAt(0);
-  const restText = cleanText.slice(1);
-  const dateObj = new Date(block.timestamp * 1000);
-  const timeStr = `${dateObj.getHours().toString().padStart(2,'0')}:${dateObj.getMinutes().toString().padStart(2,'0')}:${dateObj.getSeconds().toString().padStart(2,'0')}`;
-
   const div = document.createElement('div');
   div.className = 'rolling-block';
   div.id = `block-${block.id}`;
 
   div.innerHTML = `
-    <div class="block-meta en-text">
-      <span class="block-tag">Section ID ${block.id} · ${timeStr}</span>
-      <span class="block-seed">${block.seed || "λόγος"}</span>
-    </div>
-    <p class="block-text">
-      <span class="drop-cap">${firstChar}</span>${restText}
-    </p>
+    <p class="block-text">${cleanText}</p>
   `;
 
   trackElem.appendChild(div);
