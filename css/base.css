@@ -59,6 +59,22 @@ header {
   color: rgba(181, 171, 152, 0.6);
 }
 
+@media (max-width: 768px) {
+  header {
+    top: 20px;
+    padding: 0 20px;
+  }
+  
+  .collection-name {
+    display: none;
+  }
+  
+  .logo {
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+  }
+}
+
 .scroll-indicator {
   position: fixed;
   top: 50%; left: 40px;

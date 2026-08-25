@@ -94,18 +94,16 @@ async function syncState() {
       }
       
       if (isFirstSync && newBlocks.length > 0) {
-        // 第一次加载，跳转到直播最前沿 (Live Edge)
+        // 第一次加载：按顺序渲染字块
         for (let i = 0; i < newBlocks.length; i++) {
           const block = newBlocks[i];
           const isLast = (i === newBlocks.length - 1);
-          // 除了最后一段用来展示打字机效果，前面的历史数据瞬间渲染
           appendBlockToDOM(block, !isLast);
         }
         
-        // 确保 DOM 更新后计算高度
+        // 确保从页面最开头的卷首大标题开始优雅流淌
         setTimeout(() => {
-          // 让视口底部对齐最新生成的文字，呈现从下往上涌出的观感
-          currentScrollY = (window.innerHeight * 0.7) - trackElem.scrollHeight;
+          currentScrollY = window.innerHeight * 0.32;
         }, 50);
         
         isFirstSync = false;
