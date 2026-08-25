@@ -45,16 +45,15 @@ function ensureSplashDismissal() {
 // 物理滚动与打字机队列
 let currentScrollY = 0;
 const renderedBlockIds = new Set();
-const typewriterQueue = [];
+const pendingBlocksQueue = []; // 纯数据待打字队列（绝不提前生成空 DOM 占据下方空间）
+let currentTypingJob = null;
 let isFirstSync = true;
-const TYPEWRITER_SPEED_MS = 60; // 黄金打字速率 (60ms/字)
 
-function appendBlockToDOM(block, instantRender = false) {
-  let cleanText = block.text.trim();
-  if (!cleanText) return;
-
-  // 彻底剔除任何希腊字母、英文字符、方括号序号、编程代码符号与杂质
-  cleanText = cleanText
+function sanitizeText(raw) {
+  if (!raw) return "";
+  let text = raw.trim();
+  // 彻底剔除希腊字母、外文字符、方括号序号、编程代码符号与杂质
+  text = text
     .replace(/[\u0370-\u03ff\u1f00-\u1fff]+/g, '')
     .replace(/[a-zA-Z]+/g, '')
     .replace(/\[[^\]]*\]/g, '')
@@ -62,8 +61,10 @@ function appendBlockToDOM(block, instantRender = false) {
     .replace(/[\[\]【】\{\}\(\)\;\:\=\+\-\*\/\<\>\&\|\$\#\\•·~_\`]/g, '')
     .replace(/\s+/g, '')
     .trim();
-  if (!cleanText || cleanText.length < 5) return;
+  return text;
+}
 
+function createBlockDOM(block, instantText = null) {
   const div = document.createElement('div');
   div.className = 'rolling-block';
   div.id = `block-${block.id}`;
@@ -71,20 +72,15 @@ function appendBlockToDOM(block, instantRender = false) {
   const pElem = document.createElement('p');
   pElem.className = 'block-text';
 
-  if (instantRender) {
-    pElem.innerText = cleanText;
+  if (instantText !== null) {
+    pElem.innerText = instantText;
   } else {
     pElem.innerText = "";
-    typewriterQueue.push({
-      id: block.id,
-      text: cleanText,
-      currentIndex: 0,
-      pElem: pElem
-    });
   }
 
   div.appendChild(pElem);
   trackElem.appendChild(div);
+  return pElem;
 }
 
 // 更新遥测面板
@@ -124,8 +120,17 @@ async function syncGlobalState() {
 
           const recentBlocks = state.blocks.slice(-4);
           for (let i = 0; i < recentBlocks.length; i++) {
+            const b = recentBlocks[i];
+            const clean = sanitizeText(b.text);
+            if (!clean || clean.length < 5) continue;
+
             const isLatest = (i === recentBlocks.length - 1);
-            appendBlockToDOM(recentBlocks[i], !isLatest);
+            if (!isLatest) {
+              createBlockDOM(b, clean);
+            } else {
+              // 最新段进入打字队列
+              pendingBlocksQueue.push({ id: b.id, text: clean });
+            }
           }
 
           // 首次精准锚定：锁定在 72%（距底 28%，严格在下 1/5 至 2/5 黄金带）
@@ -138,11 +143,14 @@ async function syncGlobalState() {
           ensureSplashDismissal();
           isFirstSync = false;
         } else {
-          // 运行期：新自然段无缝衔接入队
+          // 运行期：新段落仅压入纯数据待打字队列，绝不提前向 DOM 插入空节点
           for (const block of state.blocks) {
             if (!renderedBlockIds.has(block.id)) {
               renderedBlockIds.add(block.id);
-              appendBlockToDOM(block, false);
+              const clean = sanitizeText(block.text);
+              if (clean && clean.length >= 5) {
+                pendingBlocksQueue.push({ id: block.id, text: clean });
+              }
             }
           }
         }
@@ -172,36 +180,45 @@ function startContinuousScrollLoop() {
   let typewriterLastTime = 0;
 
   function tick(time) {
-    // 1. 打字机流式输出 (带活体光标)
+    // 1. 打字机调度：仅在实际开始打字时才向 DOM 挂载节点
     if (!typewriterLastTime) typewriterLastTime = time;
     
-    // 智能动态速率调节引擎：
-    // 当云端有排队积压时加速消化 (35ms~50ms/字)，常规状态下以极具呼吸感的黄金阅读语速 (75ms/字) 持续吐字，永不断流
+    // 自适应速率调节引擎：排队多时轻微加速 (35~50ms)，常规时以黄金文学语速 (75ms) 稳定推进
     let speedMs = 75;
-    if (typewriterQueue.length > 2) {
+    if (pendingBlocksQueue.length > 2) {
       speedMs = 35;
-    } else if (typewriterQueue.length > 1) {
+    } else if (pendingBlocksQueue.length > 1) {
       speedMs = 50;
     }
 
-    if (time - typewriterLastTime > speedMs) {
+    if (!currentTypingJob && pendingBlocksQueue.length > 0) {
+      const nextData = pendingBlocksQueue.shift();
+      const pElem = createBlockDOM(nextData);
+      currentTypingJob = {
+        id: nextData.id,
+        text: nextData.text,
+        currentIndex: 0,
+        pElem: pElem
+      };
+    }
+
+    if (currentTypingJob && (time - typewriterLastTime > speedMs)) {
       typewriterLastTime = time;
-      if (typewriterQueue.length > 0) {
-        const currentJob = typewriterQueue[0];
-        if (currentJob.currentIndex < currentJob.text.length) {
-          currentJob.currentIndex++;
-          currentJob.pElem.innerText = currentJob.text.slice(0, currentJob.currentIndex) + " ▍";
-        } else {
-          // 打字完成，移除光标，保留纯净文本
-          currentJob.pElem.innerText = currentJob.text;
-          typewriterQueue.shift();
-        }
+      if (currentTypingJob.currentIndex < currentTypingJob.text.length) {
+        currentTypingJob.currentIndex++;
+        // 关键：将光标放在真实的 DOM 元素 <span class="typing-cursor"> 中，确保摄像机能够实时嗅探到真实物理像素坐标
+        const typed = currentTypingJob.text.slice(0, currentTypingJob.currentIndex);
+        currentTypingJob.pElem.innerHTML = `${typed}<span class="typing-cursor" style="opacity: 0.85; margin-left: 2px;">▍</span>`;
+      } else {
+        // 本段打字完毕，移除光标
+        currentTypingJob.pElem.innerText = currentTypingJob.text;
+        currentTypingJob = null;
       }
     }
 
-    // 2. 绝对锁定在屏幕下 1/5 至 2/5 之间（严格瞄准 72% 黄金锚线，距底 28%）
+    // 2. 绝对光学锚点锁：将正在跳动的光标死死钉在屏幕下 28%（72%高度线）
     const H = window.innerHeight;
-    const targetScreenY = H * 0.72; // 屏幕下方 72% 视线锚点 (绝不往上漂)
+    const targetScreenY = H * 0.72;
 
     const activeCursor = trackElem.querySelector('.typing-cursor');
     const trackRect = trackElem.getBoundingClientRect();
@@ -209,10 +226,8 @@ function startContinuousScrollLoop() {
 
     if (activeCursor) {
       const cursorRect = activeCursor.getBoundingClientRect();
-      // 光标相对于轨道顶部的局部 Y 坐标
       cursorLocalY = cursorRect.top - trackRect.top + (cursorRect.height / 2);
     } else {
-      // 若处于两段间隙，锚定在最新段落末尾
       const lastBlock = trackElem.querySelector('.rolling-block:last-child');
       if (lastBlock) {
         const lastRect = lastBlock.getBoundingClientRect();
@@ -222,18 +237,33 @@ function startContinuousScrollLoop() {
       }
     }
 
-    // 理想的目标卷动坐标：确保该局部光标点恰好落在屏幕 72% 高度处
     const idealScrollY = targetScreenY - cursorLocalY;
 
-    // 柔和阻尼跟随（跟随换行或新段落，绝不产生多余向上浮动）
-    currentScrollY += (idealScrollY - currentScrollY) * 0.12;
-
+    // 柔和阻尼跟随（换行时向上移一行，光标静止时零位移）
+    currentScrollY += (idealScrollY - currentScrollY) * 0.15;
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
 
     requestAnimationFrame(tick);
   }
+
   requestAnimationFrame(tick);
 }
+
+// 当浏览器从后台切回前台（失焦恢复）时，强制瞬间重新校准摄像机，防止累积帧误差
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const H = window.innerHeight;
+    const targetScreenY = H * 0.72;
+    const activeCursor = trackElem.querySelector('.typing-cursor');
+    const trackRect = trackElem.getBoundingClientRect();
+    if (activeCursor) {
+      const cursorRect = activeCursor.getBoundingClientRect();
+      const cursorLocalY = cursorRect.top - trackRect.top + (cursorRect.height / 2);
+      currentScrollY = targetScreenY - cursorLocalY;
+      trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
+    }
+  }
+});
 
 // 初始化
 async function initClient() {
