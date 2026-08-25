@@ -11,6 +11,8 @@ const streamStatusElem = document.getElementById('stream-status');
 let renderedBlockIds = new Set();
 let currentScrollY = window.innerHeight * 0.5; 
 let isGeneratingFlag = false;
+let isFirstSync = true;
+const typewriterQueue = []; // 打字机队列
 
 // 绝对恒定匀速滚动参数
 const CONSTANT_SCROLL_SPEED = 0.25; // 极缓流淌，约 15px/秒 // 每帧像素，约 30px/秒
@@ -31,16 +33,28 @@ async function initClient() {
   }
 }
 
-function appendBlockToDOM(block) {
+function appendBlockToDOM(block, instantRender = false) {
   const cleanText = block.text.trim();
   const div = document.createElement('div');
   div.className = 'rolling-block';
   div.id = `block-${block.id}`;
 
-  div.innerHTML = `
-    <p class="block-text">${cleanText}</p>
-  `;
+  const pElem = document.createElement('p');
+  pElem.className = 'block-text';
 
+  if (instantRender) {
+    pElem.innerText = cleanText;
+  } else {
+    pElem.innerText = "";
+    typewriterQueue.push({
+      id: block.id,
+      text: cleanText,
+      currentIndex: 0,
+      pElem: pElem
+    });
+  }
+
+  div.appendChild(pElem);
   trackElem.appendChild(div);
 }
 
@@ -52,13 +66,36 @@ async function syncState() {
       const state = JSON.parse(result.data[0]);
       isGeneratingFlag = state.is_generating;
       
-      let addedNew = false;
+      const newBlocks = [];
       for (const block of state.blocks) {
         if (!renderedBlockIds.has(block.id)) {
           renderedBlockIds.add(block.id);
-          appendBlockToDOM(block);
-          addedNew = true;
+          newBlocks.push(block);
         }
+      }
+      
+      if (isFirstSync && newBlocks.length > 0) {
+        // 第一次加载，跳转到直播最前沿 (Live Edge)
+        for (let i = 0; i < newBlocks.length; i++) {
+          const block = newBlocks[i];
+          const isLast = (i === newBlocks.length - 1);
+          // 除了最后一段用来展示打字机效果，前面的历史数据瞬间渲染
+          appendBlockToDOM(block, !isLast);
+        }
+        
+        // 确保 DOM 更新后计算高度
+        setTimeout(() => {
+          // 让视口底部对齐最新生成的文字，呈现从下往上涌出的观感
+          currentScrollY = (window.innerHeight * 0.7) - trackElem.scrollHeight;
+        }, 50);
+        
+        isFirstSync = false;
+      } else {
+        // 后续更新，全部进入打字机流式输出
+        for (const block of newBlocks) {
+          appendBlockToDOM(block, false);
+        }
+        if (isFirstSync) isFirstSync = false; // 如果一开始服务器是空的
       }
       
       // 清理远期离开视口的旧 DOM (当滚出屏幕上方极远处)
@@ -70,25 +107,6 @@ async function syncState() {
           const offset = firstBlock.offsetHeight + parseFloat(window.getComputedStyle(firstBlock).marginBottom);
           currentScrollY += offset; // 无缝补偿滚动偏移
           firstBlock.remove();
-        }
-      }
-
-      // 永远提前准备文本，避免滚入空白区域导致不得不"停顿"
-      // 获取 track 的总高度与当前滚动位置的关系
-      const bottomLimit = -trackElem.scrollHeight + (window.innerHeight * 0.8);
-      
-      if (!isGeneratingFlag) {
-        // 如果服务器空闲，且当前屏幕内的文字快滚动到尽头了（提前一个屏幕的量请求）
-        const needsMore = state.blocks.length === 0 || 
-                         (state.server_time - state.blocks[state.blocks.length - 1].timestamp) > 2.0;
-        
-        const isNearBottom = currentScrollY < bottomLimit + 800; // 留出800px的提前量
-
-        if (needsMore || isNearBottom) {
-          if (streamStatusElem && state.blocks.length === 0) {
-            streamStatusElem.innerText = "GENERATING INITIAL KINETIC BLOCKS...";
-          }
-          gradioClient.predict("/trigger", []).catch(e => console.error("Trigger fail", e));
         }
       }
     }
@@ -103,6 +121,8 @@ async function syncState() {
 // 极度平稳的匀速物理向上推动 (基于真实时间，不受高刷显示器影响)
 function startContinuousScrollLoop() {
   let lastTime = 0;
+  let typewriterLastTime = 0;
+  
   function tick(time) {
     if (!lastTime) lastTime = time;
     const delta = time - lastTime;
@@ -111,6 +131,26 @@ function startContinuousScrollLoop() {
     // 绝对恒定匀速：15px 每秒
     currentScrollY -= (15 * (delta / 1000));
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
+    
+    // 独立打字机流式渲染逻辑
+    if (!typewriterLastTime) typewriterLastTime = time;
+    // 动态速度：如果积压了多段文字，打字变快；否则保持自然打字速度
+    const speedMs = typewriterQueue.length > 1 ? 25 : 65; 
+    
+    if (time - typewriterLastTime > speedMs) {
+      typewriterLastTime = time;
+      if (typewriterQueue.length > 0) {
+        const currentJob = typewriterQueue[0];
+        if (currentJob.currentIndex < currentJob.text.length) {
+          currentJob.pElem.innerText += currentJob.text.charAt(currentJob.currentIndex);
+          currentJob.currentIndex++;
+        } else {
+          // 当前字块打字完成
+          typewriterQueue.shift();
+        }
+      }
+    }
+    
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
