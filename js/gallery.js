@@ -1,14 +1,10 @@
 import { Client } from "./gradio.js";
 
 let gradioClient = null;
-const liveTextElem = document.getElementById('live-text-block');
+const trackElem = document.getElementById('teleprompter-track');
 const heroSplashElem = document.getElementById('hero-splash');
-const readingContainer = document.querySelector('.reading-container');
-const loadingIndicator = document.getElementById('neural-loading-indicator');
-const loadingStageText = document.getElementById('loading-stage-text');
-const loadingBarFill = document.getElementById('loading-bar-fill');
 
-// 遥测抽屉元素
+// 遥测组件元素
 const telemetryBtn = document.getElementById('telemetry-toggle-btn');
 const telemetryDrawer = document.getElementById('telemetry-drawer');
 const telemetryCloseBtn = document.getElementById('telemetry-close-btn');
@@ -18,7 +14,6 @@ const telemetryBarFill = document.getElementById('telemetry-bar-fill');
 const telemetryLogsList = document.getElementById('telemetry-logs-list');
 const telemetrySummary = document.getElementById('telemetry-status-summary');
 
-// 交互开关遥测日志
 if (telemetryBtn && telemetryDrawer) {
   telemetryBtn.addEventListener('click', () => {
     telemetryDrawer.classList.toggle('open');
@@ -30,14 +25,7 @@ if (telemetryCloseBtn && telemetryDrawer) {
   });
 }
 
-// 全球同步实时状态
-let currentActiveBlockId = null;
-let targetText = "";
-let currentTypedIndex = 0;
-let isTyping = false;
-let typewriterTimer = null;
-
-// 卷首题记计时控制：保证展示至少 3 秒后丝滑切出
+// 卷首题记计时控制：保证展示 3 秒后丝滑切出
 const splashStartTime = Date.now();
 let splashDismissed = false;
 
@@ -54,57 +42,46 @@ function ensureSplashDismissal() {
   setTimeout(dismissSplash, waitMs);
 }
 
-// 打字机恒定速率：65毫秒/字 (全设备严格统一)
-const TYPEWRITER_INTERVAL_MS = 65;
+// 物理滚动与打字机队列
+let currentScrollY = 0;
+const SCROLL_SPEED_PX_PER_SEC = 28; // 典雅舒缓的匀速上升动力 (28px/s)
+const renderedBlockIds = new Set();
+const typewriterQueue = [];
+let isFirstSync = true;
+const TYPEWRITER_SPEED_MS = 65; // 打字机统一恒定速率 (65ms/字)
 
-// 1. 打字机逐字输出引擎 (带活体跳动光标)
-function startTypewriter(newText) {
-  if (typewriterTimer) clearInterval(typewriterTimer);
-  
-  targetText = newText;
-  currentTypedIndex = 0;
-  isTyping = true;
-  
-  // 隐藏中间加载指示器，展现打字容器
-  if (loadingIndicator) loadingIndicator.style.display = 'none';
-  if (liveTextElem) liveTextElem.style.display = 'block';
+function appendBlockToDOM(block, instantRender = false) {
+  const cleanText = block.text.trim();
+  if (!cleanText) return;
 
-  // 切段时的柔和呼吸渐变
-  if (readingContainer) {
-    readingContainer.classList.add('fade-transition');
-    setTimeout(() => {
-      liveTextElem.innerHTML = '<span class="typing-cursor">▍</span>';
-      readingContainer.classList.remove('fade-transition');
-    }, 300);
+  const div = document.createElement('div');
+  div.className = 'rolling-block';
+  div.id = `block-${block.id}`;
+
+  const pElem = document.createElement('p');
+  pElem.className = 'block-text';
+
+  if (instantRender) {
+    pElem.innerText = cleanText;
   } else {
-    liveTextElem.innerHTML = '<span class="typing-cursor">▍</span>';
+    pElem.innerText = "";
+    typewriterQueue.push({
+      id: block.id,
+      text: cleanText,
+      currentIndex: 0,
+      pElem: pElem
+    });
   }
 
-  setTimeout(() => {
-    typewriterTimer = setInterval(() => {
-      if (currentTypedIndex < targetText.length) {
-        currentTypedIndex++;
-        const visibleSlice = targetText.slice(0, currentTypedIndex);
-        liveTextElem.innerHTML = `${visibleSlice}<span class="typing-cursor">▍</span>`;
-      } else {
-        // 打字结束，保留纯净文本，光标隐去
-        liveTextElem.innerHTML = targetText;
-        clearInterval(typewriterTimer);
-        typewriterTimer = null;
-        isTyping = false;
-      }
-    }, TYPEWRITER_INTERVAL_MS);
-  }, 350);
+  div.appendChild(pElem);
+  trackElem.appendChild(div);
 }
 
-// 2. 更新遥测状态与日志
+// 更新遥测面板
 function updateTelemetry(state) {
-  const stage = state.current_stage || "SYNCING";
+  const stage = state.current_stage || "STREAM_ACTIVE";
   const progress = state.progress || (state.is_generating ? 50 : 100);
   const logs = state.logs || [];
-
-  if (loadingStageText) loadingStageText.innerText = `STAGE: ${stage} (${progress}%)`;
-  if (loadingBarFill) loadingBarFill.style.width = `${progress}%`;
 
   if (telemetryStageName) telemetryStageName.innerText = `STAGE: ${stage}`;
   if (telemetryStagePct) telemetryStagePct.innerText = `${progress}%`;
@@ -119,7 +96,7 @@ function updateTelemetry(state) {
   }
 }
 
-// 3. 全球状态同步与实时广播轮询
+// 全球同步实时轮询
 async function syncGlobalState() {
   try {
     const result = await gradioClient.predict("/state", []);
@@ -129,37 +106,115 @@ async function syncGlobalState() {
       updateTelemetry(state);
 
       if (state.blocks && state.blocks.length > 0) {
-        // 永远只获取云端最新产生的那个实时字块
-        const latestBlock = state.blocks[state.blocks.length - 1];
-        
-        if (latestBlock && latestBlock.id !== currentActiveBlockId) {
-          currentActiveBlockId = latestBlock.id;
-          const cleanChineseText = latestBlock.text.trim();
-          
-          if (cleanChineseText) {
-            startTypewriter(cleanChineseText);
-            ensureSplashDismissal();
+        if (isFirstSync) {
+          // 首次进入：只取最新 2 个自然段（前段铺垫，最新段进入打字机），绝不堆积历史包袱
+          for (const block of state.blocks) {
+            renderedBlockIds.add(block.id);
           }
+
+          const activeBlocks = state.blocks.slice(-2);
+          if (activeBlocks.length === 2) {
+            appendBlockToDOM(activeBlocks[0], true);
+            appendBlockToDOM(activeBlocks[1], false);
+          } else if (activeBlocks.length === 1) {
+            appendBlockToDOM(activeBlocks[0], false);
+          }
+
+          // 视口直接精准对齐到正在打字的这一行
+          setTimeout(() => {
+            currentScrollY = (window.innerHeight * 0.65) - trackElem.scrollHeight;
+          }, 50);
+
+          ensureSplashDismissal();
+          isFirstSync = false;
+        } else {
+          // 运行期：新自然段无缝衔接入队
+          for (const block of state.blocks) {
+            if (!renderedBlockIds.has(block.id)) {
+              renderedBlockIds.add(block.id);
+              appendBlockToDOM(block, false);
+            }
+          }
+        }
+      }
+
+      // 清理滚出屏幕上方极远处的旧 DOM
+      const allBlocks = trackElem.querySelectorAll('.rolling-block');
+      if (allBlocks.length > 10) {
+        const firstBlock = allBlocks[0];
+        const rect = firstBlock.getBoundingClientRect();
+        if (rect.bottom < -800) {
+          const offset = firstBlock.offsetHeight + parseFloat(window.getComputedStyle(firstBlock).marginBottom || 0);
+          currentScrollY += offset;
+          firstBlock.remove();
         }
       }
     }
   } catch (e) {
     console.error("Global sync fetch error:", e);
-    if (telemetrySummary) telemetrySummary.innerText = "RECONNECTING...";
   }
   
-  // 1.5 秒轮询一次，保持多端毫秒级实时同步
   setTimeout(syncGlobalState, 1500);
 }
 
-// 4. 连接云端神经中枢
+// 连续匀速向上滚动物理循环 (Delta Time 60FPS)
+function startContinuousScrollLoop() {
+  let lastTime = 0;
+  let typewriterLastTime = 0;
+  
+  let lastWindowWidth = window.innerWidth;
+  let lastTrackHeight = trackElem.scrollHeight;
+
+  function tick(time) {
+    if (!lastTime) lastTime = time;
+    const delta = time - lastTime;
+    lastTime = time;
+
+    // 屏幕宽度变化时的 Reflow 补偿
+    const currentWidth = window.innerWidth;
+    const currentHeight = trackElem.scrollHeight;
+    if (currentWidth !== lastWindowWidth) {
+      const diff = lastTrackHeight - currentHeight;
+      currentScrollY += diff;
+      lastWindowWidth = currentWidth;
+    }
+
+    // 恒定绝对物理向上滚动
+    currentScrollY -= (SCROLL_SPEED_PX_PER_SEC * (delta / 1000));
+    trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
+
+    // 打字机流式输出 (带活体光标)
+    if (!typewriterLastTime) typewriterLastTime = time;
+    const speedMs = typewriterQueue.length > 1 ? 40 : TYPEWRITER_SPEED_MS;
+
+    if (time - typewriterLastTime > speedMs) {
+      typewriterLastTime = time;
+      if (typewriterQueue.length > 0) {
+        const currentJob = typewriterQueue[0];
+        if (currentJob.currentIndex < currentJob.text.length) {
+          currentJob.currentIndex++;
+          currentJob.pElem.innerText = currentJob.text.slice(0, currentJob.currentIndex) + " ▍";
+        } else {
+          // 打字完成，移除光标，保留纯净文本
+          currentJob.pElem.innerText = currentJob.text;
+          typewriterQueue.shift();
+        }
+      }
+    }
+
+    lastTrackHeight = trackElem.scrollHeight;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// 初始化
 async function initClient() {
   setTimeout(ensureSplashDismissal, 3500);
+  startContinuousScrollLoop();
   
   try {
-    if (telemetrySummary) telemetrySummary.innerText = "CONNECTING...";
     gradioClient = await Client.connect("Buleegasy/GREEK_DENG");
-    if (telemetrySummary) telemetrySummary.innerText = "CONNECTED";
     syncGlobalState();
   } catch (e) {
     console.error("Gradio connect failed, retrying...", e);

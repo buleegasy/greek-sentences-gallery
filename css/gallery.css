@@ -1,20 +1,19 @@
-/* Zen Minimalist Single-Block Live Typewriter Architecture */
+/* Continuous Vertical Stream Architecture */
 
-html, body.live-gallery {
+html, body.teleprompter-locked {
   height: 100vh !important;
   height: 100dvh !important;
   width: 100vw !important;
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
-  position: relative !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
   background-color: var(--parchment);
   color: var(--ink);
   font-family: var(--font-serif-zh);
   user-select: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 /* 42vw 巨型半透明背景水印 */
@@ -34,7 +33,7 @@ html, body.live-gallery {
   user-select: none;
 }
 
-/* 3秒后丝滑淡出切出的卷首题记 Overlay */
+/* 3秒后丝滑淡出切出的卷首题记 Overlay (固定居中，不随文字滚动) */
 .hero-splash-overlay {
   position: fixed;
   top: 0;
@@ -113,98 +112,61 @@ html, body.live-gallery {
   margin: 0 auto;
 }
 
-/* 核心阅读容器：居中、优雅、透气 */
-.reading-stage {
+/* 纵向无尽平滑滚动流视口 (顶部与底部带有电影级渐隐遮罩) */
+.teleprompter-viewport {
   width: 100vw;
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
+  position: relative;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 0 50px;
-  box-sizing: border-box;
   z-index: 10;
-  position: relative;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
 }
 
-.reading-container {
+/* 连续匀速向上滑轨 */
+.teleprompter-track {
   width: 100%;
   max-width: 860px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  transition: opacity 0.8s ease;
+  box-sizing: border-box;
+  padding: 0 40px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  will-change: transform;
 }
 
-.reading-container.fade-transition {
-  opacity: 0.2;
+/* 自然段落：紧凑、连贯、行云流水，不过分分割 */
+.rolling-block {
+  width: 100%;
+  margin-bottom: 1.8rem; /* 自然连贯段落间距，消除割裂感 */
+  position: relative;
 }
 
-/* 优雅居中加载指示器 */
-.neural-loading-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 0;
-  gap: 18px;
-}
-
-.loading-pulse-ring {
-  width: 24px;
-  height: 24px;
-  border: 2px solid rgba(140, 58, 43, 0.2);
-  border-top-color: var(--rust);
-  border-radius: 50%;
-  animation: spinRing 1.2s infinite linear;
-}
-
-@keyframes spinRing {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-label {
-  font-size: 0.75rem;
-  letter-spacing: 0.3em;
-  color: var(--rust);
-  text-transform: uppercase;
-  opacity: 0.85;
-}
-
-.loading-progress-bar-wrap {
-  width: 180px;
-  height: 2px;
-  background: rgba(181, 171, 152, 0.25);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.loading-progress-bar-fill {
-  height: 100%;
-  background: var(--rust);
-  transition: width 0.6s ease;
-}
-
-.live-paragraph {
-  font-size: 1.95rem;
-  line-height: 2.35;
-  letter-spacing: 0.08em;
+.block-text {
+  font-size: 1.85rem;
+  line-height: 2.3;
+  letter-spacing: 0.06em;
   color: var(--ink);
   text-align: justify;
   text-justify: inter-ideograph;
+  margin: 0;
   word-wrap: break-word;
   white-space: pre-wrap;
-  text-indent: 2em;
-  min-height: 180px;
+  text-indent: 2em; /* 首行缩进，自然连贯长卷质感 */
 }
 
 .typing-cursor {
   display: inline-block;
   color: var(--rust);
   font-weight: 300;
-  margin-left: 3px;
-  animation: blinkCursor 1s infinite ease-in-out;
+  margin-left: 2px;
+  animation: blinkCursor 0.9s infinite ease-in-out;
 }
 
 @keyframes blinkCursor {
@@ -327,8 +289,8 @@ html, body.live-gallery {
 
 /* 移动端与小屏适配 */
 @media (max-width: 768px) {
-  .reading-stage {
-    padding: 0 24px;
+  .teleprompter-track {
+    padding: 0 20px;
   }
 
   .hero-tag-wrap {
@@ -350,8 +312,8 @@ html, body.live-gallery {
     margin-bottom: 2.5rem;
   }
 
-  .live-paragraph {
-    font-size: 1.3rem;
+  .block-text {
+    font-size: 1.25rem;
     line-height: 2.15;
     letter-spacing: 0.05em;
     text-indent: 2em;

@@ -8,14 +8,14 @@
   <meta http-equiv="Expires" content="0">
   <title>我在希腊蹬随机的句子。</title>
   
-  <link rel="stylesheet" href="css/tokens.css?v=30">
-  <link rel="stylesheet" href="css/base.css?v=30">
-  <link rel="stylesheet" href="css/gallery.css?v=30">
-  <link rel="stylesheet" href="css/animations.css?v=30">
+  <link rel="stylesheet" href="css/tokens.css?v=35">
+  <link rel="stylesheet" href="css/base.css?v=35">
+  <link rel="stylesheet" href="css/gallery.css?v=35">
+  <link rel="stylesheet" href="css/animations.css?v=35">
 </head>
-<body class="live-gallery">
+<body class="teleprompter-locked">
 
-  <!-- 3秒丝滑淡出卷首题记 (Splash Intro) -->
+  <!-- 3秒丝滑淡出卷首题记 (Splash Intro, 固定居中不滚动) -->
   <div id="hero-splash" class="hero-splash-overlay">
     <div class="hero-tag-wrap en-text">
       <span class="hero-greek-sub">ΤΥΧΑΙΕΣ ΠΡΟΤΑΣΕΙΣ ΣΤΗΝ ΕΛΛΑΔΑ</span>
@@ -32,31 +32,22 @@
   <!-- 42vw 巨型半透明背景水印 -->
   <div class="watermark-number en-text" id="watermark-bg">Ω</div>
 
-  <!-- 纯净打字机视口 -->
-  <main class="reading-stage">
-    <div class="reading-container">
-      <!-- 初始/等待加载指示器 -->
-      <div id="neural-loading-indicator" class="neural-loading-box">
-        <div class="loading-pulse-ring"></div>
-        <div class="loading-label en-text" id="loading-stage-text">CONNECTING TO NEURAL CLUSTER...</div>
-        <div class="loading-progress-bar-wrap">
-          <div class="loading-progress-bar-fill" id="loading-bar-fill" style="width: 15%;"></div>
-        </div>
-      </div>
-      <!-- 实时自然段正文 -->
-      <div id="live-text-block" class="live-paragraph" style="display: none;"></div>
+  <!-- 纵向无尽平滑滚动流视口 (顶部与底部带有电影级渐隐遮罩) -->
+  <main class="teleprompter-viewport">
+    <div class="teleprompter-track" id="teleprompter-track">
+      <!-- 动态字块持续从下方平滑涌出并向上匀速滚动 -->
     </div>
   </main>
 
-  <!-- 右下角悬浮轻量日志开关与遥测面板 -->
+  <!-- 右下角极简遥测日志指示器与抽屉 -->
   <div class="telemetry-widget">
-    <button id="telemetry-toggle-btn" class="telemetry-btn en-text" title="Toggle Neural Telemetry Logs">
+    <button id="telemetry-toggle-btn" class="telemetry-btn en-text" title="Toggle Telemetry Logs">
       <span class="telemetry-dot"></span>
       <span id="telemetry-status-summary">STREAM: ACTIVE</span>
     </button>
     <div id="telemetry-drawer" class="telemetry-drawer en-text">
       <div class="telemetry-header">
-        <span>NEURAL TELEMETRY LOGS</span>
+        <span>SYSTEM TELEMETRY LOGS</span>
         <span id="telemetry-close-btn" class="telemetry-close">✕</span>
       </div>
       <div class="telemetry-stage-bar">
@@ -72,6 +63,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/gallery.js?v=zen_v30"></script>
+  <script type="module" src="js/gallery.js?v=stream_v36"></script>
 </body>
 </html>
