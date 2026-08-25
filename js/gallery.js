@@ -100,11 +100,16 @@ async function syncState() {
   setTimeout(syncState, 1500);
 }
 
-// 60FPS 极度平稳的匀速物理向上推动
+// 极度平稳的匀速物理向上推动 (基于真实时间，不受高刷显示器影响)
 function startContinuousScrollLoop() {
-  function tick() {
-    // 绝对恒定匀速，绝不停顿！
-    currentScrollY -= CONSTANT_SCROLL_SPEED;
+  let lastTime = 0;
+  function tick(time) {
+    if (!lastTime) lastTime = time;
+    const delta = time - lastTime;
+    lastTime = time;
+    
+    // 绝对恒定匀速：15px 每秒
+    currentScrollY -= (15 * (delta / 1000));
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
     requestAnimationFrame(tick);
   }
