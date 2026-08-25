@@ -52,13 +52,13 @@ let isFirstSync = true;
 function sanitizeText(raw) {
   if (!raw) return "";
   let text = raw.trim();
-  // 彻底剔除希腊字母、外文字符、方括号序号、编程代码符号与杂质
+  // 彻底剔除希腊字母、外文字符、方括号序号、编程代码符号与杂质（保留 * 用于 Markdown **重点词加粗**）
   text = text
     .replace(/[\u0370-\u03ff\u1f00-\u1fff]+/g, '')
     .replace(/[a-zA-Z]+/g, '')
     .replace(/\[[^\]]*\]/g, '')
     .replace(/【[^】]*】/g, '')
-    .replace(/[\[\]【】\{\}\(\)\;\:\=\+\-\*\/\<\>\&\|\$\#\\•·~_\`]/g, '')
+    .replace(/[\[\]【】\{\}\(\)\;\:\=\+\-\/\<\>\&\|\$\#\\•·~_\`]/g, '')
     .replace(/\s+/g, '')
     .trim();
   return text;
