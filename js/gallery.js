@@ -10,9 +10,10 @@ const streamStatusElem = document.getElementById('stream-status');
 // 全球同步引擎状态
 let renderedBlockIds = new Set();
 let currentScrollY = window.innerHeight * 0.5; 
-let targetScrollY = currentScrollY;
-let scrollVelocity = 0; // px per frame
 let isGeneratingFlag = false;
+
+// 绝对恒定匀速滚动参数
+const CONSTANT_SCROLL_SPEED = 0.5; // 每帧像素，约 30px/秒
 
 async function initClient() {
   if (streamStatusElem) streamStatusElem.innerText = "CONNECTING TO NEURAL CLUSTER...";
@@ -41,15 +42,6 @@ function appendBlockToDOM(block) {
   `;
 
   trackElem.appendChild(div);
-  
-  // 重新计算平滑滚动的目标与速度
-  // 让新生出的文本的底部在接下来的 12 秒内，平滑、匀速地越过屏幕中轴线
-  targetScrollY = (window.innerHeight * 0.45) - trackElem.scrollHeight;
-  const distance = currentScrollY - targetScrollY;
-  
-  // 假定每个字块平均产生时间约为 12 秒 (720 帧 @60fps)
-  // 通过调整动态速率，让多端 (无论屏幕长短) 都在同一时刻走完这段距离
-  scrollVelocity = distance / 720;
 }
 
 // 核心同步轮询
@@ -69,36 +61,35 @@ async function syncState() {
         }
       }
       
-      // 清理远期离开视口的旧 DOM
+      // 清理远期离开视口的旧 DOM (当滚出屏幕上方极远处)
       const allBlocks = trackElem.querySelectorAll('.rolling-block');
       if (allBlocks.length > 15) {
         const firstBlock = allBlocks[0];
         const rect = firstBlock.getBoundingClientRect();
-        if (rect.bottom < -500) {
-          // 补偿高度差异避免跳跃
-          const offset = firstBlock.offsetHeight + 120; // 包含 margin
-          currentScrollY += offset;
-          targetScrollY += offset;
+        if (rect.bottom < -1000) {
+          const offset = firstBlock.offsetHeight + parseFloat(window.getComputedStyle(firstBlock).marginBottom);
+          currentScrollY += offset; // 无缝补偿滚动偏移
           firstBlock.remove();
         }
       }
 
-      // 若发现服务器空闲，且字块很少，或者最后一个字块已经是 2 秒前生成的，就主动触发生成新字块
+      // 永远提前准备文本，避免滚入空白区域导致不得不"停顿"
+      // 获取 track 的总高度与当前滚动位置的关系
+      const bottomLimit = -trackElem.scrollHeight + (window.innerHeight * 0.8);
+      
       if (!isGeneratingFlag) {
+        // 如果服务器空闲，且当前屏幕内的文字快滚动到尽头了（提前一个屏幕的量请求）
         const needsMore = state.blocks.length === 0 || 
                          (state.server_time - state.blocks[state.blocks.length - 1].timestamp) > 2.0;
         
-        // 当自己快滚到底部时，也触发生成
-        const isNearBottom = (currentScrollY - targetScrollY) < 200;
+        const isNearBottom = currentScrollY < bottomLimit + 800; // 留出800px的提前量
 
         if (needsMore || isNearBottom) {
           if (streamStatusElem && state.blocks.length === 0) {
-            streamStatusElem.innerText = "GENERATING INITIAL KINETIC BLOCKS (CPU)...";
+            streamStatusElem.innerText = "GENERATING INITIAL KINETIC BLOCKS...";
           }
           gradioClient.predict("/trigger", []).catch(e => console.error("Trigger fail", e));
         }
-      } else if (state.blocks.length === 0 && streamStatusElem) {
-        streamStatusElem.innerText = "GENERATING INITIAL KINETIC BLOCKS (CPU)...";
       }
     }
   } catch (e) {
@@ -112,14 +103,8 @@ async function syncState() {
 // 60FPS 极度平稳的匀速物理向上推动
 function startContinuousScrollLoop() {
   function tick() {
-    // 匀速物理引擎：不间断滑移
-    if (scrollVelocity > 0 && currentScrollY > targetScrollY) {
-      currentScrollY -= scrollVelocity;
-    } else if (currentScrollY > targetScrollY) {
-       // 保底匀速流转
-      currentScrollY -= 0.6;
-    }
-    
+    // 绝对恒定匀速，绝不停顿！
+    currentScrollY -= CONSTANT_SCROLL_SPEED;
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
     requestAnimationFrame(tick);
   }
