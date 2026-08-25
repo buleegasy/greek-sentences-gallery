@@ -50,7 +50,11 @@ let isFirstSync = true;
 const TYPEWRITER_SPEED_MS = 60; // 黄金打字速率 (60ms/字)
 
 function appendBlockToDOM(block, instantRender = false) {
-  const cleanText = block.text.trim();
+  let cleanText = block.text.trim();
+  if (!cleanText) return;
+
+  // 彻底剔除任何方括号序号与注记 [1], 【2】
+  cleanText = cleanText.replace(/\[[^\]]*\]/g, '').replace(/【[^】]*】/g, '').replace(/[\[\]【】]/g, '').trim();
   if (!cleanText) return;
 
   const div = document.createElement('div');
