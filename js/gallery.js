@@ -64,6 +64,17 @@ function sanitizeText(raw) {
   return text;
 }
 
+function formatMarkdown(text) {
+  if (!text) return "";
+  // 匹配闭合的 **word**
+  let html = text.replace(/\*\*([^*]+)\*\*/g, '<strong class="key-term">$1</strong>');
+  // 匹配打字过程中正在生成的未闭合 **word
+  html = html.replace(/\*\*([^*]+)$/g, '<strong class="key-term">$1</strong>');
+  // 清理残留的孤立星号
+  html = html.replace(/\*/g, '');
+  return html;
+}
+
 function createBlockDOM(block, instantText = null) {
   const div = document.createElement('div');
   div.className = 'rolling-block';
@@ -73,7 +84,7 @@ function createBlockDOM(block, instantText = null) {
   pElem.className = 'block-text';
 
   if (instantText !== null) {
-    pElem.innerText = instantText;
+    pElem.innerHTML = formatMarkdown(instantText);
   } else {
     pElem.innerText = "";
   }
@@ -206,12 +217,13 @@ function startContinuousScrollLoop() {
       typewriterLastTime = time;
       if (currentTypingJob.currentIndex < currentTypingJob.text.length) {
         currentTypingJob.currentIndex++;
-        // 关键：将光标放在真实的 DOM 元素 <span class="typing-cursor"> 中，确保摄像机能够实时嗅探到真实物理像素坐标
+        // 关键：动态解析 Markdown **加粗** 并将光标放在真实的 DOM 元素 <span class="typing-cursor"> 中
         const typed = currentTypingJob.text.slice(0, currentTypingJob.currentIndex);
-        currentTypingJob.pElem.innerHTML = `${typed}<span class="typing-cursor" style="opacity: 0.85; margin-left: 2px;">▍</span>`;
+        const formatted = formatMarkdown(typed);
+        currentTypingJob.pElem.innerHTML = `${formatted}<span class="typing-cursor" style="opacity: 0.85; margin-left: 2px;">▍</span>`;
       } else {
-        // 本段打字完毕，移除光标
-        currentTypingJob.pElem.innerText = currentTypingJob.text;
+        // 本段打字完毕，移除光标并保留完整 Markdown 样式
+        currentTypingJob.pElem.innerHTML = formatMarkdown(currentTypingJob.text);
         currentTypingJob = null;
       }
     }

@@ -161,6 +161,15 @@ html, body.teleprompter-locked {
   text-indent: 2em; /* 首行缩进，自然连贯长卷质感 */
 }
 
+/* 核心重点词加粗：深墨色加粗并带有细微温润光晕 */
+.block-text strong, .key-term {
+  font-weight: 700;
+  color: #11100e;
+  letter-spacing: 0.08em;
+  padding: 0 2px;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
 .typing-cursor {
   display: inline-block;
   color: var(--rust);
