@@ -49,9 +49,9 @@ function appendBlockToDOM(block, instantRender = false) {
   
   // 平均每个字符在当前设备上产生的高度增量 (px/char)
   const pxPerChar = fullHeight / Math.max(1, cleanText.length);
-  // 基于打字机当前设定 120ms/字，推算下坠速度，并赋予 1.05 的向上抗重力拉扯系数
-  const requiredSpeed = pxPerChar * (1000 / 120) * 1.05;
-  dynamicScrollSpeed = Math.max(15, requiredSpeed); // 设置保底 15px/s
+  // 基于打字机设定 70ms/字 (约 14.3字/秒)，推算下坠速度，并附加 +22px/s 的绝对视觉上升动力
+  const typingDownRate = pxPerChar * (1000 / 70);
+  dynamicScrollSpeed = Math.max(45, typingDownRate + 22); // 设置保底 45px/s
   // -----------------------------
 
   const div = document.createElement('div');
@@ -167,7 +167,7 @@ function startContinuousScrollLoop() {
     
     // 独立打字机流式渲染逻辑
     if (!typewriterLastTime) typewriterLastTime = time;
-    const speedMs = typewriterQueue.length > 1 ? 60 : 120; 
+    const speedMs = typewriterQueue.length > 1 ? 40 : 70; 
     
     if (time - typewriterLastTime > speedMs) {
       typewriterLastTime = time;
