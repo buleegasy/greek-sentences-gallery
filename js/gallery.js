@@ -53,6 +53,12 @@ function appendBlockToDOM(block, instantRender = false) {
   let cleanText = block.text.trim();
   if (!cleanText) return;
 
+  // 彻底剔除任何 AI 助手寒暄导语 (如 "当然可以！"、"以下是翻译：" 等)
+  cleanText = cleanText
+    .replace(/^(?:当然(?:可以|没问题)|好的|没问题|是的|收到|遵命)[！!，,\s]*/gi, '')
+    .replace(/^(?:以下|这|下面)?(?:是|为)?(?:翻译(?:后)?(?:的)?(?:句子|内容|结果|文本)?|译文|润色结果)?(?:如下|是)?[:：\s]*/gi, '')
+    .replace(/^[^。！？\n]{1,20}[：:]\s*/g, '');
+
   // 彻底剔除任何希腊字母、英文字符、方括号序号、编程代码符号与杂质
   cleanText = cleanText
     .replace(/[\u0370-\u03ff\u1f00-\u1fff]+/g, '')
