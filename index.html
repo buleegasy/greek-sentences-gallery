@@ -8,10 +8,10 @@
   <meta http-equiv="Expires" content="0">
   <title>我在希腊蹬随机的句子。</title>
   
-  <link rel="stylesheet" href="css/tokens.css?v=27">
-  <link rel="stylesheet" href="css/base.css?v=27">
-  <link rel="stylesheet" href="css/gallery.css?v=27">
-  <link rel="stylesheet" href="css/animations.css?v=27">
+  <link rel="stylesheet" href="css/tokens.css?v=30">
+  <link rel="stylesheet" href="css/base.css?v=30">
+  <link rel="stylesheet" href="css/gallery.css?v=30">
+  <link rel="stylesheet" href="css/animations.css?v=30">
 </head>
 <body class="live-gallery">
 
@@ -32,13 +32,46 @@
   <!-- 42vw 巨型半透明背景水印 -->
   <div class="watermark-number en-text" id="watermark-bg">Ω</div>
 
-  <!-- 纯净打字机视口：始终仅呈现当前最新生成的实时自然段 -->
+  <!-- 纯净打字机视口 -->
   <main class="reading-stage">
     <div class="reading-container">
-      <div id="live-text-block" class="live-paragraph"></div>
+      <!-- 初始/等待加载指示器 -->
+      <div id="neural-loading-indicator" class="neural-loading-box">
+        <div class="loading-pulse-ring"></div>
+        <div class="loading-label en-text" id="loading-stage-text">CONNECTING TO NEURAL CLUSTER...</div>
+        <div class="loading-progress-bar-wrap">
+          <div class="loading-progress-bar-fill" id="loading-bar-fill" style="width: 15%;"></div>
+        </div>
+      </div>
+      <!-- 实时自然段正文 -->
+      <div id="live-text-block" class="live-paragraph" style="display: none;"></div>
     </div>
   </main>
 
-  <script type="module" src="js/gallery.js?v=zen_v26"></script>
+  <!-- 右下角悬浮轻量日志开关与遥测面板 -->
+  <div class="telemetry-widget">
+    <button id="telemetry-toggle-btn" class="telemetry-btn en-text" title="Toggle Neural Telemetry Logs">
+      <span class="telemetry-dot"></span>
+      <span id="telemetry-status-summary">STREAM: ACTIVE</span>
+    </button>
+    <div id="telemetry-drawer" class="telemetry-drawer en-text">
+      <div class="telemetry-header">
+        <span>NEURAL TELEMETRY LOGS</span>
+        <span id="telemetry-close-btn" class="telemetry-close">✕</span>
+      </div>
+      <div class="telemetry-stage-bar">
+        <span id="telemetry-stage-name">STAGE: INITIALIZING</span>
+        <span id="telemetry-stage-pct">0%</span>
+      </div>
+      <div class="telemetry-progress-line">
+        <div id="telemetry-bar-fill" class="telemetry-bar-fill" style="width: 0%;"></div>
+      </div>
+      <div id="telemetry-logs-list" class="telemetry-logs-list">
+        <!-- 实时日志行 -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/gallery.js?v=zen_v30"></script>
 </body>
 </html>
