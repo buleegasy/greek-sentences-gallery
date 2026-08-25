@@ -174,7 +174,15 @@ function startContinuousScrollLoop() {
   function tick(time) {
     // 1. 打字机流式输出 (带活体光标)
     if (!typewriterLastTime) typewriterLastTime = time;
-    const speedMs = typewriterQueue.length > 1 ? 35 : TYPEWRITER_SPEED_MS;
+    
+    // 智能动态速率调节引擎：
+    // 当云端有排队积压时加速消化 (35ms~50ms/字)，常规状态下以极具呼吸感的黄金阅读语速 (75ms/字) 持续吐字，永不断流
+    let speedMs = 75;
+    if (typewriterQueue.length > 2) {
+      speedMs = 35;
+    } else if (typewriterQueue.length > 1) {
+      speedMs = 50;
+    }
 
     if (time - typewriterLastTime > speedMs) {
       typewriterLastTime = time;
