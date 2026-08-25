@@ -128,14 +128,14 @@ function startContinuousScrollLoop() {
     const delta = time - lastTime;
     lastTime = time;
     
-    // 绝对恒定匀速：15px 每秒
-    currentScrollY -= (15 * (delta / 1000));
+    // 绝对恒定匀速：微微提速至 22px 每秒，以跟上打字机生长的速度
+    currentScrollY -= (22 * (delta / 1000));
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
     
     // 独立打字机流式渲染逻辑
     if (!typewriterLastTime) typewriterLastTime = time;
-    // 动态速度：如果积压了多段文字，打字变快；否则保持自然打字速度
-    const speedMs = typewriterQueue.length > 1 ? 25 : 65; 
+    // 动态速度：放慢单字蹦出的速度 (90ms)，让滚动条有充裕的时间把它往上推
+    const speedMs = typewriterQueue.length > 1 ? 40 : 90; 
     
     if (time - typewriterLastTime > speedMs) {
       typewriterLastTime = time;
