@@ -1,16 +1,20 @@
-/* Continuous Vertical Teleprompter / Rolling Subtitle Layout */
+/* Zen Minimalist Single-Block Live Typewriter Architecture */
 
-html, body.teleprompter-locked {
+html, body.live-gallery {
   height: 100vh !important;
   height: 100dvh !important;
   width: 100vw !important;
-  overflow: hidden !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+  background-color: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-serif-zh);
   user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* 42vw 巨型半透明背景水印 */
@@ -23,52 +27,39 @@ html, body.teleprompter-locked {
   font-family: var(--font-serif-en);
   font-weight: 300;
   color: var(--ink);
-  opacity: 0.022;
+  opacity: 0.024;
   z-index: 0;
   pointer-events: none;
   line-height: 1;
   user-select: none;
 }
 
-/* 电影级纵向滚动视口（顶部与底部带有柔和渐隐羽化） */
-.teleprompter-viewport {
+/* 3秒后丝滑淡出切出的卷首题记 Overlay */
+.hero-splash-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   height: 100dvh;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  z-index: 1;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
-}
-
-/* 连续匀速向上滑轨 */
-.teleprompter-track {
-  width: 100%;
-  max-width: 880px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  padding: 0 40px;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%) translateY(100vh);
-  will-change: transform;
-}
-
-/* 卷首巨幅艺术主标题 */
-.teleprompter-hero-header {
-  width: 100%;
-  text-align: center;
-  margin-top: 10vh;
-  margin-bottom: 7rem;
+  background: var(--parchment);
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  padding: 0 30px;
+  box-sizing: border-box;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.8s;
+}
+
+.hero-splash-overlay.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .hero-tag-wrap {
@@ -122,83 +113,63 @@ html, body.teleprompter-locked {
   margin: 0 auto;
 }
 
-/* 单个滚动字块（自然段落） */
-.rolling-block {
-  width: 100%;
-  margin-bottom: 3rem; /* 自然段落间距 */
+/* 核心阅读容器：居中、优雅、透气 */
+.reading-stage {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 50px;
+  box-sizing: border-box;
+  z-index: 10;
   position: relative;
 }
 
-.block-text {
-  font-size: 1.9rem;
-  line-height: 2.3;
+.reading-container {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: opacity 0.8s ease;
+}
+
+.reading-container.fade-transition {
+  opacity: 0.2;
+}
+
+.live-paragraph {
+  font-size: 1.95rem;
+  line-height: 2.35;
   letter-spacing: 0.08em;
   color: var(--ink);
   text-align: justify;
   text-justify: inter-ideograph;
-  margin: 0;
   word-wrap: break-word;
   white-space: pre-wrap;
-  text-indent: 2em; /* 首行缩进，自然段落典雅感 */
+  text-indent: 2em;
+  min-height: 180px;
 }
 
-/* 底部固定状态栏 */
-.manuscript-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 18px 50px;
-  background: rgba(248, 245, 239, 0.94);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(181, 171, 152, 0.3);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  color: rgba(181, 171, 152, 0.85);
-  text-transform: uppercase;
-  z-index: 100;
-  box-sizing: border-box;
-}
-
-.status-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.live-dot {
+.typing-cursor {
   display: inline-block;
-  width: 6px;
-  height: 6px;
-  background-color: var(--rust);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--rust);
-  animation: pulseDot 2s infinite ease-in-out;
-}
-
-@keyframes pulseDot {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-
-.speed-indicator {
   color: var(--rust);
-  font-weight: 600;
+  font-weight: 300;
+  margin-left: 3px;
+  animation: blinkCursor 1s infinite ease-in-out;
+}
+
+@keyframes blinkCursor {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.9; }
 }
 
 /* 移动端与小屏适配 */
 @media (max-width: 768px) {
-  .teleprompter-track {
+  .reading-stage {
     padding: 0 24px;
-    max-width: 100%;
-  }
-
-  .teleprompter-hero-header {
-    margin-top: 6vh;
-    margin-bottom: 4rem;
   }
 
   .hero-tag-wrap {
@@ -220,19 +191,10 @@ html, body.teleprompter-locked {
     margin-bottom: 2.5rem;
   }
 
-  .block-text {
-    font-size: 1.25rem;
+  .live-paragraph {
+    font-size: 1.3rem;
     line-height: 2.15;
     letter-spacing: 0.05em;
     text-indent: 2em;
-  }
-
-  .manuscript-footer {
-    padding: 12px 18px;
-    font-size: 0.62rem;
-  }
-
-  .status-right {
-    display: none;
   }
 }

@@ -1,198 +1,118 @@
-// 24/7 Continuous Vertical Teleprompter Rolling Engine
-// 电影字幕级平稳纵向滚动 · 零驻留停顿 · 永不间断流淌 · 全球多端时空同步
-
 import { Client } from "./gradio.js";
 
 let gradioClient = null;
-const trackElem = document.getElementById('teleprompter-track');
-const streamStatusElem = document.getElementById('stream-status');
+const liveTextElem = document.getElementById('live-text-block');
+const heroSplashElem = document.getElementById('hero-splash');
+const readingContainer = document.querySelector('.reading-container');
 
-// 全球同步引擎状态
-let renderedBlockIds = new Set();
-let currentScrollY = window.innerHeight * 0.5; 
-let isGeneratingFlag = false;
-let isFirstSync = true;
-const typewriterQueue = []; // 打字机队列
+// 全球同步实时状态
+let currentActiveBlockId = null;
+let targetText = "";
+let currentTypedIndex = 0;
+let isTyping = false;
+let typewriterTimer = null;
 
-// 动态响应式绝对匀速滚动参数
-let dynamicScrollSpeed = 25; // 默认值，将被设备计算覆写
+// 卷首题记计时控制：保证展示至少 3 秒后丝滑切出
+const splashStartTime = Date.now();
+let splashDismissed = false;
 
-async function initClient() {
-  if (streamStatusElem) streamStatusElem.innerText = "CONNECTING TO NEURAL CLUSTER...";
-  try {
-    gradioClient = await Client.connect("Buleegasy/GREEK_DENG");
-    if (streamStatusElem) streamStatusElem.innerText = "24/7 CONTINUOUS VERTICAL TELEPROMPTER ACTIVE";
-    
-    // 初始化启动时，先拉取状态
-    syncState();
-  } catch (e) {
-    console.error("Connection error:", e);
-    if (streamStatusElem) streamStatusElem.innerText = "RECONNECTING...";
-    await new Promise(r => setTimeout(r, 2000));
-    return initClient();
+function dismissSplash() {
+  if (!splashDismissed && heroSplashElem) {
+    heroSplashElem.classList.add('fade-out');
+    splashDismissed = true;
   }
 }
 
-function appendBlockToDOM(block, instantRender = false) {
-  const cleanText = block.text.trim();
-  
-  // --- 跨设备全自适应物理配平 ---
-  // 先创建一个不可见的替身渲染，探明在当前设备屏幕宽度和缩放下的精确高度
-  const measureDiv = document.createElement('div');
-  measureDiv.className = 'rolling-block';
-  measureDiv.style.visibility = 'hidden';
-  measureDiv.innerHTML = `<p class="block-text">${cleanText}</p>`;
-  trackElem.appendChild(measureDiv);
-  
-  const fullHeight = measureDiv.offsetHeight;
-  measureDiv.remove(); // 测完即焚，不发生实际渲染重绘
-  
-  // 平均每个字符在当前设备上产生的高度增量 (px/char)
-  const pxPerChar = fullHeight / Math.max(1, cleanText.length);
-  // 基于打字机设定 70ms/字 (约 14.3字/秒)，推算下坠速度，并附加 +22px/s 的绝对视觉上升动力
-  const typingDownRate = pxPerChar * (1000 / 70);
-  dynamicScrollSpeed = Math.max(45, typingDownRate + 22); // 设置保底 45px/s
-  // -----------------------------
+function ensureSplashDismissal() {
+  const elapsed = Date.now() - splashStartTime;
+  const waitMs = Math.max(0, 3000 - elapsed);
+  setTimeout(dismissSplash, waitMs);
+}
 
-  const div = document.createElement('div');
-  div.className = 'rolling-block';
-  div.id = `block-${block.id}`;
+// 打字机恒定速率：65毫秒/字 (全设备严格统一)
+const TYPEWRITER_INTERVAL_MS = 65;
 
-  const pElem = document.createElement('p');
-  pElem.className = 'block-text';
-
-  if (instantRender) {
-    pElem.innerText = cleanText;
+// 1. 打字机逐字输出引擎 (带活体跳动光标)
+function startTypewriter(newText) {
+  if (typewriterTimer) clearInterval(typewriterTimer);
+  
+  targetText = newText;
+  currentTypedIndex = 0;
+  isTyping = true;
+  
+  // 切段时的柔和呼吸渐变
+  if (readingContainer) {
+    readingContainer.classList.add('fade-transition');
+    setTimeout(() => {
+      liveTextElem.innerHTML = '<span class="typing-cursor">▍</span>';
+      readingContainer.classList.remove('fade-transition');
+    }, 300);
   } else {
-    pElem.innerText = "";
-    typewriterQueue.push({
-      id: block.id,
-      text: cleanText,
-      currentIndex: 0,
-      pElem: pElem
-    });
+    liveTextElem.innerHTML = '<span class="typing-cursor">▍</span>';
   }
 
-  div.appendChild(pElem);
-  trackElem.appendChild(div);
+  setTimeout(() => {
+    typewriterTimer = setInterval(() => {
+      if (currentTypedIndex < targetText.length) {
+        currentTypedIndex++;
+        const visibleSlice = targetText.slice(0, currentTypedIndex);
+        liveTextElem.innerHTML = `${visibleSlice}<span class="typing-cursor">▍</span>`;
+      } else {
+        // 打字结束，保留纯净文本，光标隐去
+        liveTextElem.innerHTML = targetText;
+        clearInterval(typewriterTimer);
+        typewriterTimer = null;
+        isTyping = false;
+      }
+    }, TYPEWRITER_INTERVAL_MS);
+  }, 350);
 }
 
-// 核心同步轮询
-async function syncState() {
+// 2. 全球状态同步与实时广播轮询
+async function syncGlobalState() {
   try {
     const result = await gradioClient.predict("/state", []);
     if (result && result.data && result.data[0]) {
       const state = JSON.parse(result.data[0]);
-      isGeneratingFlag = state.is_generating;
       
-      if (isFirstSync && state.blocks.length > 0) {
-        // 标记所有历史数据，防止重复渲染
-        for (const block of state.blocks) {
-          renderedBlockIds.add(block.id);
-        }
-
-        // 首次进入：仅取最新 2 个字块（前一个静态铺垫，最新一个立即启动打字机）
-        const activeBlocks = state.blocks.slice(-2);
-        if (activeBlocks.length === 2) {
-          appendBlockToDOM(activeBlocks[0], true);
-          appendBlockToDOM(activeBlocks[1], false);
-        } else if (activeBlocks.length === 1) {
-          appendBlockToDOM(activeBlocks[0], false);
-        }
-
-        // 卷首大标题与打字机完美呈现在视口黄金分割位
-        setTimeout(() => {
-          currentScrollY = window.innerHeight * 0.32;
-        }, 50);
-
-        isFirstSync = false;
-      } else {
-        // 运行期：新字块实时入队打字机
-        for (const block of state.blocks) {
-          if (!renderedBlockIds.has(block.id)) {
-            renderedBlockIds.add(block.id);
-            appendBlockToDOM(block, false);
+      if (state.blocks && state.blocks.length > 0) {
+        // 永远只获取云端最新产生的那个实时字块
+        const latestBlock = state.blocks[state.blocks.length - 1];
+        
+        if (latestBlock && latestBlock.id !== currentActiveBlockId) {
+          currentActiveBlockId = latestBlock.id;
+          const cleanChineseText = latestBlock.text.trim();
+          
+          if (cleanChineseText) {
+            startTypewriter(cleanChineseText);
+            // 拿到第一段文字后，启动 3 秒丝滑退场
+            ensureSplashDismissal();
           }
-        }
-        if (isFirstSync) isFirstSync = false;
-      }
-      
-      // 清理远期离开视口的旧 DOM (当滚出屏幕上方极远处)
-      const allBlocks = trackElem.querySelectorAll('.rolling-block');
-      if (allBlocks.length > 15) {
-        const firstBlock = allBlocks[0];
-        const rect = firstBlock.getBoundingClientRect();
-        if (rect.bottom < -1000) {
-          const offset = firstBlock.offsetHeight + parseFloat(window.getComputedStyle(firstBlock).marginBottom);
-          currentScrollY += offset; // 无缝补偿滚动偏移
-          firstBlock.remove();
         }
       }
     }
   } catch (e) {
-    console.error("Sync fetch error:", e);
+    console.error("Global sync fetch error:", e);
   }
   
-  // 1.5 秒轮询一次全球状态
-  setTimeout(syncState, 1500);
+  // 1.5 秒轮询一次，保持多端毫秒级实时同步
+  setTimeout(syncGlobalState, 1500);
 }
 
-// 极度平稳的匀速物理向上推动 (基于真实时间，不受高刷显示器影响)
-function startContinuousScrollLoop() {
-  let lastTime = 0;
-  let typewriterLastTime = 0;
+// 3. 连接云端神经中枢
+async function initClient() {
+  // 设置保底定时器：即使网络延迟，3.5 秒后也必切入舞台
+  setTimeout(ensureSplashDismissal, 3500);
   
-  let lastWindowWidth = window.innerWidth;
-  let lastTrackHeight = trackElem.scrollHeight;
-  
-  function tick(time) {
-    if (!lastTime) lastTime = time;
-    const delta = time - lastTime;
-    lastTime = time;
-    
-    // 监听设备宽度突变（如横竖屏切换、窗口拖拽、断点触发）
-    // 宽度突变会导致文本重新排版，发生巨大的高度折损或膨胀
-    const currentWidth = window.innerWidth;
-    const currentHeight = trackElem.scrollHeight;
-    if (currentWidth !== lastWindowWidth) {
-      // 补偿高度差，使视口底部的“直播最前沿”绝对死锁在原来的视觉位置
-      const diff = lastTrackHeight - currentHeight;
-      currentScrollY += diff;
-      lastWindowWidth = currentWidth;
-    }
-    
-    // 全设备动态响应式绝对匀速
-    currentScrollY -= (dynamicScrollSpeed * (delta / 1000));
-    trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
-    
-    // 独立打字机流式渲染逻辑（带有活体跳动光标）
-    if (!typewriterLastTime) typewriterLastTime = time;
-    const speedMs = typewriterQueue.length > 1 ? 40 : 70; 
-    
-    if (time - typewriterLastTime > speedMs) {
-      typewriterLastTime = time;
-      if (typewriterQueue.length > 0) {
-        const currentJob = typewriterQueue[0];
-        if (currentJob.currentIndex < currentJob.text.length) {
-          currentJob.currentIndex++;
-          currentJob.pElem.innerText = currentJob.text.slice(0, currentJob.currentIndex) + " ▍";
-        } else {
-          // 打字完成，移除光标，保留纯净文本
-          currentJob.pElem.innerText = currentJob.text;
-          typewriterQueue.shift();
-        }
-      }
-    }
-    
-    // 在这帧结束前，保存当前的绝对高度，作为下一帧对比的基准
-    lastTrackHeight = trackElem.scrollHeight;
-    
-    requestAnimationFrame(tick);
+  try {
+    gradioClient = await Client.connect("Buleegasy/GREEK_DENG");
+    syncGlobalState();
+  } catch (e) {
+    console.error("Gradio connect failed, retrying...", e);
+    setTimeout(initClient, 2000);
   }
-  requestAnimationFrame(tick);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  startContinuousScrollLoop();
   initClient();
 });

@@ -13,49 +13,32 @@
   <link rel="stylesheet" href="css/gallery.css?v=9">
   <link rel="stylesheet" href="css/animations.css?v=9">
 </head>
-<body class="teleprompter-locked">
+<body class="live-gallery">
 
-  <!-- 顶部极简展陈导航 -->
-  <header>
-    <div class="logo en-text">CREDITS STREAM · GREEK_DENG</div>
-    <div class="collection-name en-text">24/7 Continuous Vertical Rolling Installation</div>
-  </header>
+  <!-- 3秒丝滑淡出卷首题记 (Splash Intro) -->
+  <div id="hero-splash" class="hero-splash-overlay">
+    <div class="hero-tag-wrap en-text">
+      <span class="hero-greek-sub">ΤΥΧΑΙΕΣ ΠΡΟΤΑΣΕΙΣ ΣΤΗΝ ΕΛΛΑΔΑ</span>
+      <span class="hero-divider">·</span>
+      <span class="hero-coord">37°58'N 23°43'E</span>
+    </div>
+    <h1 class="hero-main-title">我在希腊蹬随机的句子</h1>
+    <div class="hero-meta-line en-text">
+      <span>AUTONOMOUS DISCOURSE GENERATOR · SmolLM2 × MarianMT</span>
+    </div>
+    <div class="hero-separator"></div>
+  </div>
 
   <!-- 42vw 巨型半透明背景水印 -->
   <div class="watermark-number en-text" id="watermark-bg">Ω</div>
 
-  <!-- 纵向平滑滚动视口（顶部与底部带有电影级渐隐遮罩） -->
-  <main class="teleprompter-viewport">
-    <div class="teleprompter-track" id="teleprompter-track">
-      <!-- 卷首题记：巨幅艺术主标题 -->
-      <div class="teleprompter-hero-header">
-        <div class="hero-tag-wrap en-text">
-          <span class="hero-greek-sub">ΤΥΧΑΙΕΣ ΠΡΟΤΑΣΕΙΣ ΣΤΗΝ ΕΛΛΑΔΑ</span>
-          <span class="hero-divider">·</span>
-          <span class="hero-coord">37°58'N 23°43'E</span>
-        </div>
-        <h1 class="hero-main-title">我在希腊蹬随机的句子</h1>
-        <div class="hero-meta-line en-text">
-          <span>AUTONOMOUS DISCOURSE GENERATOR · SmolLM2 × MarianMT</span>
-        </div>
-        <div class="hero-separator"></div>
-      </div>
-      <!-- 动态字块持续从下方平滑涌出并向上匀速滚动 -->
+  <!-- 纯净打字机视口：始终仅呈现当前最新生成的实时自然段 -->
+  <main class="reading-stage">
+    <div class="reading-container">
+      <div id="live-text-block" class="live-paragraph"></div>
     </div>
   </main>
 
-  <!-- 底部固定实时状态栏 -->
-  <footer class="manuscript-footer">
-    <div class="status-left">
-      <span class="live-dot"></span>
-      <span id="stream-status">24/7 CONTINUOUS VERTICAL TELEPROMPTER ACTIVE</span>
-      <span class="speed-indicator en-text">· SMOOTH ROLLING</span>
-    </div>
-    <div class="status-right en-text">
-      <span>NO RESIDENCE · UNBROKEN KINETIC FLOW</span>
-    </div>
-  </footer>
-
-  <script type="module" src="js/gallery.js?v=local_gradio_v21"></script>
+  <script type="module" src="js/gallery.js?v=zen_v26"></script>
 </body>
 </html>
