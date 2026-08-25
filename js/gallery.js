@@ -44,11 +44,11 @@ function ensureSplashDismissal() {
 
 // 物理滚动与打字机队列
 let currentScrollY = 0;
-const SCROLL_SPEED_PX_PER_SEC = 28; // 典雅舒缓的匀速上升动力 (28px/s)
+const SCROLL_SPEED_PX_PER_SEC = 42; // 提升至电影字幕级黄金滚动流速 (42px/s)
 const renderedBlockIds = new Set();
 const typewriterQueue = [];
 let isFirstSync = true;
-const TYPEWRITER_SPEED_MS = 65; // 打字机统一恒定速率 (65ms/字)
+const TYPEWRITER_SPEED_MS = 55; // 打字机速率 (55ms/字)
 
 function appendBlockToDOM(block, instantRender = false) {
   const cleanText = block.text.trim();
@@ -107,22 +107,20 @@ async function syncGlobalState() {
 
       if (state.blocks && state.blocks.length > 0) {
         if (isFirstSync) {
-          // 首次进入：只取最新 2 个自然段（前段铺垫，最新段进入打字机），绝不堆积历史包袱
+          // 首次进入：载入最近 3~4 段历史形成饱满的长卷河流，最新段进入打字机
           for (const block of state.blocks) {
             renderedBlockIds.add(block.id);
           }
 
-          const activeBlocks = state.blocks.slice(-2);
-          if (activeBlocks.length === 2) {
-            appendBlockToDOM(activeBlocks[0], true);
-            appendBlockToDOM(activeBlocks[1], false);
-          } else if (activeBlocks.length === 1) {
-            appendBlockToDOM(activeBlocks[0], false);
+          const recentBlocks = state.blocks.slice(-4);
+          for (let i = 0; i < recentBlocks.length; i++) {
+            const isLatest = (i === recentBlocks.length - 1);
+            appendBlockToDOM(recentBlocks[i], !isLatest);
           }
 
-          // 视口直接精准对齐到正在打字的这一行
+          // 视口初始定位：使打字机处于屏幕下方 70% 黄金视线区，上方饱满流淌
           setTimeout(() => {
-            currentScrollY = (window.innerHeight * 0.65) - trackElem.scrollHeight;
+            currentScrollY = (window.innerHeight * 0.72) - trackElem.scrollHeight;
           }, 50);
 
           ensureSplashDismissal();
@@ -140,10 +138,10 @@ async function syncGlobalState() {
 
       // 清理滚出屏幕上方极远处的旧 DOM
       const allBlocks = trackElem.querySelectorAll('.rolling-block');
-      if (allBlocks.length > 10) {
+      if (allBlocks.length > 15) {
         const firstBlock = allBlocks[0];
         const rect = firstBlock.getBoundingClientRect();
-        if (rect.bottom < -800) {
+        if (rect.bottom < -1000) {
           const offset = firstBlock.offsetHeight + parseFloat(window.getComputedStyle(firstBlock).marginBottom || 0);
           currentScrollY += offset;
           firstBlock.remove();
@@ -185,7 +183,7 @@ function startContinuousScrollLoop() {
 
     // 打字机流式输出 (带活体光标)
     if (!typewriterLastTime) typewriterLastTime = time;
-    const speedMs = typewriterQueue.length > 1 ? 40 : TYPEWRITER_SPEED_MS;
+    const speedMs = typewriterQueue.length > 1 ? 35 : TYPEWRITER_SPEED_MS;
 
     if (time - typewriterLastTime > speedMs) {
       typewriterLastTime = time;
