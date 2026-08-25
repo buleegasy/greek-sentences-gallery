@@ -142,10 +142,24 @@ function startContinuousScrollLoop() {
   let lastTime = 0;
   let typewriterLastTime = 0;
   
+  let lastWindowWidth = window.innerWidth;
+  let lastTrackHeight = trackElem.scrollHeight;
+  
   function tick(time) {
     if (!lastTime) lastTime = time;
     const delta = time - lastTime;
     lastTime = time;
+    
+    // 监听设备宽度突变（如横竖屏切换、窗口拖拽、断点触发）
+    // 宽度突变会导致文本重新排版，发生巨大的高度折损或膨胀
+    const currentWidth = window.innerWidth;
+    const currentHeight = trackElem.scrollHeight;
+    if (currentWidth !== lastWindowWidth) {
+      // 补偿高度差，使视口底部的“直播最前沿”绝对死锁在原来的视觉位置
+      const diff = lastTrackHeight - currentHeight;
+      currentScrollY += diff;
+      lastWindowWidth = currentWidth;
+    }
     
     // 全设备动态响应式绝对匀速
     currentScrollY -= (dynamicScrollSpeed * (delta / 1000));
@@ -153,7 +167,6 @@ function startContinuousScrollLoop() {
     
     // 独立打字机流式渲染逻辑
     if (!typewriterLastTime) typewriterLastTime = time;
-    // 动态速度：放慢单字蹦出的速度 (120ms)，使其恰好铺满服务器生成一个字块的时间，实现永不停歇的绝对匀速打字
     const speedMs = typewriterQueue.length > 1 ? 60 : 120; 
     
     if (time - typewriterLastTime > speedMs) {
@@ -164,11 +177,13 @@ function startContinuousScrollLoop() {
           currentJob.pElem.innerText += currentJob.text.charAt(currentJob.currentIndex);
           currentJob.currentIndex++;
         } else {
-          // 当前字块打字完成
           typewriterQueue.shift();
         }
       }
     }
+    
+    // 在这帧结束前，保存当前的绝对高度，作为下一帧对比的基准
+    lastTrackHeight = trackElem.scrollHeight;
     
     requestAnimationFrame(tick);
   }
