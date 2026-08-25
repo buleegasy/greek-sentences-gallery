@@ -53,16 +53,16 @@ function appendBlockToDOM(block, instantRender = false) {
   let cleanText = block.text.trim();
   if (!cleanText) return;
 
-  // 彻底剔除任何希腊字母、英文字符、方括号序号与杂质符号
+  // 彻底剔除任何希腊字母、英文字符、方括号序号、编程代码符号与杂质
   cleanText = cleanText
     .replace(/[\u0370-\u03ff\u1f00-\u1fff]+/g, '')
     .replace(/[a-zA-Z]+/g, '')
     .replace(/\[[^\]]*\]/g, '')
     .replace(/【[^】]*】/g, '')
-    .replace(/[\[\]【】•·~_\*\/\\\#\@\$\%\^\&\=\+\<\>\|\`]/g, '')
+    .replace(/[\[\]【】\{\}\(\)\;\:\=\+\-\*\/\<\>\&\|\$\#\\•·~_\`]/g, '')
     .replace(/\s+/g, '')
     .trim();
-  if (!cleanText) return;
+  if (!cleanText || cleanText.length < 5) return;
 
   const div = document.createElement('div');
   div.className = 'rolling-block';
