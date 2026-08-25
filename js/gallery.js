@@ -14,8 +14,8 @@ let isGeneratingFlag = false;
 let isFirstSync = true;
 const typewriterQueue = []; // 打字机队列
 
-// 绝对恒定匀速滚动参数
-const CONSTANT_SCROLL_SPEED = 0.25; // 极缓流淌，约 15px/秒 // 每帧像素，约 30px/秒
+// 动态响应式绝对匀速滚动参数
+let dynamicScrollSpeed = 25; // 默认值，将被设备计算覆写
 
 async function initClient() {
   if (streamStatusElem) streamStatusElem.innerText = "CONNECTING TO NEURAL CLUSTER...";
@@ -35,6 +35,25 @@ async function initClient() {
 
 function appendBlockToDOM(block, instantRender = false) {
   const cleanText = block.text.trim();
+  
+  // --- 跨设备全自适应物理配平 ---
+  // 先创建一个不可见的替身渲染，探明在当前设备屏幕宽度和缩放下的精确高度
+  const measureDiv = document.createElement('div');
+  measureDiv.className = 'rolling-block';
+  measureDiv.style.visibility = 'hidden';
+  measureDiv.innerHTML = `<p class="block-text">${cleanText}</p>`;
+  trackElem.appendChild(measureDiv);
+  
+  const fullHeight = measureDiv.offsetHeight;
+  measureDiv.remove(); // 测完即焚，不发生实际渲染重绘
+  
+  // 平均每个字符在当前设备上产生的高度增量 (px/char)
+  const pxPerChar = fullHeight / Math.max(1, cleanText.length);
+  // 基于打字机当前设定 120ms/字，推算下坠速度，并赋予 1.05 的向上抗重力拉扯系数
+  const requiredSpeed = pxPerChar * (1000 / 120) * 1.05;
+  dynamicScrollSpeed = Math.max(15, requiredSpeed); // 设置保底 15px/s
+  // -----------------------------
+
   const div = document.createElement('div');
   div.className = 'rolling-block';
   div.id = `block-${block.id}`;
@@ -128,8 +147,8 @@ function startContinuousScrollLoop() {
     const delta = time - lastTime;
     lastTime = time;
     
-    // 数学物理配平：打字产生的新高度速率 ≈ 24.8px/s，滚动速率设为 25px/s，实现极其微小的上升拉力，视觉绝对静止
-    currentScrollY -= (25 * (delta / 1000));
+    // 全设备动态响应式绝对匀速
+    currentScrollY -= (dynamicScrollSpeed * (delta / 1000));
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
     
     // 独立打字机流式渲染逻辑
