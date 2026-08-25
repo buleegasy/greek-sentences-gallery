@@ -85,34 +85,36 @@ async function syncState() {
       const state = JSON.parse(result.data[0]);
       isGeneratingFlag = state.is_generating;
       
-      const newBlocks = [];
-      for (const block of state.blocks) {
-        if (!renderedBlockIds.has(block.id)) {
+      if (isFirstSync && state.blocks.length > 0) {
+        // 标记所有历史数据，防止重复渲染
+        for (const block of state.blocks) {
           renderedBlockIds.add(block.id);
-          newBlocks.push(block);
         }
-      }
-      
-      if (isFirstSync && newBlocks.length > 0) {
-        // 第一次加载：按顺序渲染字块
-        for (let i = 0; i < newBlocks.length; i++) {
-          const block = newBlocks[i];
-          const isLast = (i === newBlocks.length - 1);
-          appendBlockToDOM(block, !isLast);
+
+        // 首次进入：仅取最新 2 个字块（前一个静态铺垫，最新一个立即启动打字机）
+        const activeBlocks = state.blocks.slice(-2);
+        if (activeBlocks.length === 2) {
+          appendBlockToDOM(activeBlocks[0], true);
+          appendBlockToDOM(activeBlocks[1], false);
+        } else if (activeBlocks.length === 1) {
+          appendBlockToDOM(activeBlocks[0], false);
         }
-        
-        // 确保从页面最开头的卷首大标题开始优雅流淌
+
+        // 卷首大标题与打字机完美呈现在视口黄金分割位
         setTimeout(() => {
           currentScrollY = window.innerHeight * 0.32;
         }, 50);
-        
+
         isFirstSync = false;
       } else {
-        // 后续更新，全部进入打字机流式输出
-        for (const block of newBlocks) {
-          appendBlockToDOM(block, false);
+        // 运行期：新字块实时入队打字机
+        for (const block of state.blocks) {
+          if (!renderedBlockIds.has(block.id)) {
+            renderedBlockIds.add(block.id);
+            appendBlockToDOM(block, false);
+          }
         }
-        if (isFirstSync) isFirstSync = false; // 如果一开始服务器是空的
+        if (isFirstSync) isFirstSync = false;
       }
       
       // 清理远期离开视口的旧 DOM (当滚出屏幕上方极远处)
@@ -163,7 +165,7 @@ function startContinuousScrollLoop() {
     currentScrollY -= (dynamicScrollSpeed * (delta / 1000));
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
     
-    // 独立打字机流式渲染逻辑
+    // 独立打字机流式渲染逻辑（带有活体跳动光标）
     if (!typewriterLastTime) typewriterLastTime = time;
     const speedMs = typewriterQueue.length > 1 ? 40 : 70; 
     
@@ -172,9 +174,11 @@ function startContinuousScrollLoop() {
       if (typewriterQueue.length > 0) {
         const currentJob = typewriterQueue[0];
         if (currentJob.currentIndex < currentJob.text.length) {
-          currentJob.pElem.innerText += currentJob.text.charAt(currentJob.currentIndex);
           currentJob.currentIndex++;
+          currentJob.pElem.innerText = currentJob.text.slice(0, currentJob.currentIndex) + " ▍";
         } else {
+          // 打字完成，移除光标，保留纯净文本
+          currentJob.pElem.innerText = currentJob.text;
           typewriterQueue.shift();
         }
       }
