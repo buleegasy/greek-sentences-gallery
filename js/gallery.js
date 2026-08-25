@@ -167,14 +167,12 @@ async function syncGlobalState() {
         }
       }
 
-      // 清理滚出屏幕上方极远处的旧 DOM
+      // 清理滚出屏幕上方极远处的旧 DOM (闭环控制下安全移除，无需手动补偿 offset)
       const allBlocks = trackElem.querySelectorAll('.rolling-block');
       if (allBlocks.length > 15) {
         const firstBlock = allBlocks[0];
         const rect = firstBlock.getBoundingClientRect();
         if (rect.bottom < -1000) {
-          const offset = firstBlock.offsetHeight + parseFloat(window.getComputedStyle(firstBlock).marginBottom || 0);
-          currentScrollY += offset;
           firstBlock.remove();
         }
       }
@@ -186,7 +184,7 @@ async function syncGlobalState() {
   setTimeout(syncGlobalState, 1500);
 }
 
-// 绝对防飘移精准摄像机（Direct Optical Anchor Lock）
+// 屏幕空间绝对闭环防漂移伺服引擎（Screen-Space Closed-Loop Optical Servo）
 function startContinuousScrollLoop() {
   let typewriterLastTime = 0;
 
@@ -194,8 +192,8 @@ function startContinuousScrollLoop() {
     // 1. 打字机调度：仅在实际开始打字时才向 DOM 挂载节点
     if (!typewriterLastTime) typewriterLastTime = time;
     
-    // 自适应速率调节引擎：排队多时轻微加速 (35~50ms)，常规时以黄金文学语速 (75ms) 稳定推进
-    let speedMs = 75;
+    // 自适应速率调节引擎：排队多时轻微加速 (35~50ms)，常规时以黄金文学语速 (70ms) 稳定推进
+    let speedMs = 70;
     if (pendingBlocksQueue.length > 2) {
       speedMs = 35;
     } else if (pendingBlocksQueue.length > 1) {
@@ -220,7 +218,7 @@ function startContinuousScrollLoop() {
         // 关键：动态解析 Markdown **加粗** 并将光标放在真实的 DOM 元素 <span class="typing-cursor"> 中
         const typed = currentTypingJob.text.slice(0, currentTypingJob.currentIndex);
         const formatted = formatMarkdown(typed);
-        currentTypingJob.pElem.innerHTML = `${formatted}<span class="typing-cursor" style="opacity: 0.85; margin-left: 2px;">▍</span>`;
+        currentTypingJob.pElem.innerHTML = `${formatted}<span class="typing-cursor">▍</span>`;
       } else {
         // 本段打字完毕，移除光标并保留完整 Markdown 样式
         currentTypingJob.pElem.innerHTML = formatMarkdown(currentTypingJob.text);
@@ -228,31 +226,30 @@ function startContinuousScrollLoop() {
       }
     }
 
-    // 2. 绝对光学锚点锁：将正在跳动的光标死死钉在屏幕下 28%（72%高度线）
+    // 2. 屏幕绝对坐标闭环伺服控制：
+    // 直接读取屏幕物理视口中的实际光标 Y 坐标，计算与 72% 黄金锚线的绝对像素误差！
     const H = window.innerHeight;
-    const targetScreenY = H * 0.72;
+    const targetScreenY = H * 0.72; // 屏幕下方 72% 黄金线（距底 28%）
 
     const activeCursor = trackElem.querySelector('.typing-cursor');
-    const trackRect = trackElem.getBoundingClientRect();
-    let cursorLocalY = 0;
+    let currentFocusScreenY = 0;
 
     if (activeCursor) {
       const cursorRect = activeCursor.getBoundingClientRect();
-      cursorLocalY = cursorRect.top - trackRect.top + (cursorRect.height / 2);
+      currentFocusScreenY = cursorRect.top + (cursorRect.height / 2);
     } else {
       const lastBlock = trackElem.querySelector('.rolling-block:last-child');
       if (lastBlock) {
-        const lastRect = lastBlock.getBoundingClientRect();
-        cursorLocalY = lastRect.bottom - trackRect.top;
+        currentFocusScreenY = lastBlock.getBoundingClientRect().bottom;
       } else {
-        cursorLocalY = trackElem.scrollHeight;
+        currentFocusScreenY = targetScreenY;
       }
     }
 
-    const idealScrollY = targetScreenY - cursorLocalY;
+    // 绝对闭环误差纠偏：只要光标偏离 72% 哪怕 1 个像素，自动平滑反向抵消！
+    const error = targetScreenY - currentFocusScreenY;
+    currentScrollY += error * 0.18;
 
-    // 柔和阻尼跟随（换行时向上移一行，光标静止时零位移）
-    currentScrollY += (idealScrollY - currentScrollY) * 0.15;
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
 
     requestAnimationFrame(tick);
@@ -267,11 +264,11 @@ document.addEventListener('visibilitychange', () => {
     const H = window.innerHeight;
     const targetScreenY = H * 0.72;
     const activeCursor = trackElem.querySelector('.typing-cursor');
-    const trackRect = trackElem.getBoundingClientRect();
     if (activeCursor) {
       const cursorRect = activeCursor.getBoundingClientRect();
-      const cursorLocalY = cursorRect.top - trackRect.top + (cursorRect.height / 2);
-      currentScrollY = targetScreenY - cursorLocalY;
+      const currentFocusScreenY = cursorRect.top + (cursorRect.height / 2);
+      const error = targetScreenY - currentFocusScreenY;
+      currentScrollY += error;
       trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
     }
   }
