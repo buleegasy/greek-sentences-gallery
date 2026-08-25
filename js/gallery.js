@@ -47,7 +47,7 @@ let currentScrollY = 0;
 const renderedBlockIds = new Set();
 const typewriterQueue = [];
 let isFirstSync = true;
-const TYPEWRITER_SPEED_MS = 60; // 舒适打字机速率 (60ms/字)
+const TYPEWRITER_SPEED_MS = 60; // 黄金打字速率 (60ms/字)
 
 function appendBlockToDOM(block, instantRender = false) {
   const cleanText = block.text.trim();
@@ -117,11 +117,12 @@ async function syncGlobalState() {
             appendBlockToDOM(recentBlocks[i], !isLatest);
           }
 
-          // 视口初始精准锚定：将光标直接置于屏幕高度 70% 处（严格在 60%~80% 黄金区间）
+          // 首次精准锚定：锁定在 72%（距底 28%，严格在下 1/5 至 2/5 黄金带）
           setTimeout(() => {
             const H = window.innerHeight;
-            currentScrollY = (H * 0.70) - trackElem.scrollHeight;
-          }, 50);
+            const targetY = H * 0.72;
+            currentScrollY = targetY - trackElem.scrollHeight;
+          }, 30);
 
           ensureSplashDismissal();
           isFirstSync = false;
@@ -155,28 +156,11 @@ async function syncGlobalState() {
   setTimeout(syncGlobalState, 1500);
 }
 
-// 弹性摄像机循环：确保生成光标严格锁定在屏幕下 1/5 至 2/5 区间（即 60% ~ 80% Viewport Height）
+// 绝对防飘移精准摄像机（Direct Optical Anchor Lock）
 function startContinuousScrollLoop() {
-  let lastTime = 0;
   let typewriterLastTime = 0;
-  
-  let lastWindowWidth = window.innerWidth;
-  let lastTrackHeight = trackElem.scrollHeight;
 
   function tick(time) {
-    if (!lastTime) lastTime = time;
-    const delta = time - lastTime;
-    lastTime = time;
-
-    // 屏幕宽度变化时的 Reflow 补偿
-    const currentWidth = window.innerWidth;
-    const currentHeight = trackElem.scrollHeight;
-    if (currentWidth !== lastWindowWidth) {
-      const diff = lastTrackHeight - currentHeight;
-      currentScrollY += diff;
-      lastWindowWidth = currentWidth;
-    }
-
     // 1. 打字机流式输出 (带活体光标)
     if (!typewriterLastTime) typewriterLastTime = time;
     const speedMs = typewriterQueue.length > 1 ? 35 : TYPEWRITER_SPEED_MS;
@@ -196,44 +180,37 @@ function startContinuousScrollLoop() {
       }
     }
 
-    // 2. 空间几何锚定：获取当前打字光标（或最新字块底端）在屏幕上的绝对垂直坐标
+    // 2. 绝对锁定在屏幕下 1/5 至 2/5 之间（严格瞄准 72% 黄金锚线，距底 28%）
     const H = window.innerHeight;
-    const minZoneY = H * 0.60; // 屏幕下五分之二线 (40% from bottom = 60% of viewport)
-    const maxZoneY = H * 0.80; // 屏幕下五分之一线 (20% from bottom = 80% of viewport)
-    const targetAnchorY = H * 0.70; // 黄金锚定中心线 (70% of viewport)
+    const targetScreenY = H * 0.72; // 屏幕下方 72% 视线锚点 (绝不往上漂)
 
     const activeCursor = trackElem.querySelector('.typing-cursor');
-    let currentCursorY;
+    const trackRect = trackElem.getBoundingClientRect();
+    let cursorLocalY = 0;
 
     if (activeCursor) {
-      const rect = activeCursor.getBoundingClientRect();
-      currentCursorY = rect.top + (rect.height / 2);
+      const cursorRect = activeCursor.getBoundingClientRect();
+      // 光标相对于轨道顶部的局部 Y 坐标
+      cursorLocalY = cursorRect.top - trackRect.top + (cursorRect.height / 2);
     } else {
+      // 若处于两段间隙，锚定在最新段落末尾
       const lastBlock = trackElem.querySelector('.rolling-block:last-child');
       if (lastBlock) {
-        currentCursorY = lastBlock.getBoundingClientRect().bottom;
+        const lastRect = lastBlock.getBoundingClientRect();
+        cursorLocalY = lastRect.bottom - trackRect.top;
       } else {
-        currentCursorY = targetAnchorY;
+        cursorLocalY = trackElem.scrollHeight;
       }
     }
 
-    // 3. 动态摄像机跟随算法：平滑阻尼使光标恒定保持在 [60% * H, 80% * H] 区间内
-    const errorY = currentCursorY - targetAnchorY;
+    // 理想的目标卷动坐标：确保该局部光标点恰好落在屏幕 72% 高度处
+    const idealScrollY = targetScreenY - cursorLocalY;
 
-    if (currentCursorY > maxZoneY) {
-      // 触碰下限 (低于屏幕 80%)：快速平滑拉升
-      currentScrollY -= (errorY * 0.12);
-    } else if (currentCursorY < minZoneY) {
-      // 触碰上限 (高于屏幕 60%)：平滑缓动下降
-      currentScrollY -= (errorY * 0.08);
-    } else {
-      // 在 [60%, 80%] 黄金区间内：以极柔和阻尼向 70% 黄金中心线微调，保证文字匀速流淌
-      currentScrollY -= (errorY * 0.045);
-    }
+    // 柔和阻尼跟随（跟随换行或新段落，绝不产生多余向上浮动）
+    currentScrollY += (idealScrollY - currentScrollY) * 0.12;
 
     trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
 
-    lastTrackHeight = trackElem.scrollHeight;
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
