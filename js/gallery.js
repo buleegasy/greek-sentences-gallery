@@ -13,7 +13,7 @@ let currentScrollY = window.innerHeight * 0.5;
 let isGeneratingFlag = false;
 
 // 绝对恒定匀速滚动参数
-const CONSTANT_SCROLL_SPEED = 0.5; // 每帧像素，约 30px/秒
+const CONSTANT_SCROLL_SPEED = 0.25; // 极缓流淌，约 15px/秒 // 每帧像素，约 30px/秒
 
 async function initClient() {
   if (streamStatusElem) streamStatusElem.innerText = "CONNECTING TO NEURAL CLUSTER...";
