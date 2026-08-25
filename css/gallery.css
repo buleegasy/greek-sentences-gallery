@@ -74,6 +74,7 @@ html, body.teleprompter-locked {
   text-align: justify;
   margin: 0;
   word-wrap: break-word;
+  white-space: pre-wrap;
   text-indent: 2em; /* 首行缩进，更像长文自然段 */
 }
 
