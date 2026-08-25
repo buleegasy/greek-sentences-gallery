@@ -53,8 +53,15 @@ function appendBlockToDOM(block, instantRender = false) {
   let cleanText = block.text.trim();
   if (!cleanText) return;
 
-  // 彻底剔除任何方括号序号与注记 [1], 【2】
-  cleanText = cleanText.replace(/\[[^\]]*\]/g, '').replace(/【[^】]*】/g, '').replace(/[\[\]【】]/g, '').trim();
+  // 彻底剔除任何希腊字母、英文字符、方括号序号与杂质符号
+  cleanText = cleanText
+    .replace(/[\u0370-\u03ff\u1f00-\u1fff]+/g, '')
+    .replace(/[a-zA-Z]+/g, '')
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/【[^】]*】/g, '')
+    .replace(/[\[\]【】•·~_\*\/\\\#\@\$\%\^\&\=\+\<\>\|\`]/g, '')
+    .replace(/\s+/g, '')
+    .trim();
   if (!cleanText) return;
 
   const div = document.createElement('div');
