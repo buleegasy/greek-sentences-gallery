@@ -44,11 +44,10 @@ function ensureSplashDismissal() {
 
 // 物理滚动与打字机队列
 let currentScrollY = 0;
-const SCROLL_SPEED_PX_PER_SEC = 42; // 提升至电影字幕级黄金滚动流速 (42px/s)
 const renderedBlockIds = new Set();
 const typewriterQueue = [];
 let isFirstSync = true;
-const TYPEWRITER_SPEED_MS = 55; // 打字机速率 (55ms/字)
+const TYPEWRITER_SPEED_MS = 60; // 舒适打字机速率 (60ms/字)
 
 function appendBlockToDOM(block, instantRender = false) {
   const cleanText = block.text.trim();
@@ -118,9 +117,10 @@ async function syncGlobalState() {
             appendBlockToDOM(recentBlocks[i], !isLatest);
           }
 
-          // 视口初始定位：使打字机处于屏幕下方 70% 黄金视线区，上方饱满流淌
+          // 视口初始精准锚定：将光标直接置于屏幕高度 70% 处（严格在 60%~80% 黄金区间）
           setTimeout(() => {
-            currentScrollY = (window.innerHeight * 0.72) - trackElem.scrollHeight;
+            const H = window.innerHeight;
+            currentScrollY = (H * 0.70) - trackElem.scrollHeight;
           }, 50);
 
           ensureSplashDismissal();
@@ -155,7 +155,7 @@ async function syncGlobalState() {
   setTimeout(syncGlobalState, 1500);
 }
 
-// 连续匀速向上滚动物理循环 (Delta Time 60FPS)
+// 弹性摄像机循环：确保生成光标严格锁定在屏幕下 1/5 至 2/5 区间（即 60% ~ 80% Viewport Height）
 function startContinuousScrollLoop() {
   let lastTime = 0;
   let typewriterLastTime = 0;
@@ -177,11 +177,7 @@ function startContinuousScrollLoop() {
       lastWindowWidth = currentWidth;
     }
 
-    // 恒定绝对物理向上滚动
-    currentScrollY -= (SCROLL_SPEED_PX_PER_SEC * (delta / 1000));
-    trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
-
-    // 打字机流式输出 (带活体光标)
+    // 1. 打字机流式输出 (带活体光标)
     if (!typewriterLastTime) typewriterLastTime = time;
     const speedMs = typewriterQueue.length > 1 ? 35 : TYPEWRITER_SPEED_MS;
 
@@ -199,6 +195,43 @@ function startContinuousScrollLoop() {
         }
       }
     }
+
+    // 2. 空间几何锚定：获取当前打字光标（或最新字块底端）在屏幕上的绝对垂直坐标
+    const H = window.innerHeight;
+    const minZoneY = H * 0.60; // 屏幕下五分之二线 (40% from bottom = 60% of viewport)
+    const maxZoneY = H * 0.80; // 屏幕下五分之一线 (20% from bottom = 80% of viewport)
+    const targetAnchorY = H * 0.70; // 黄金锚定中心线 (70% of viewport)
+
+    const activeCursor = trackElem.querySelector('.typing-cursor');
+    let currentCursorY;
+
+    if (activeCursor) {
+      const rect = activeCursor.getBoundingClientRect();
+      currentCursorY = rect.top + (rect.height / 2);
+    } else {
+      const lastBlock = trackElem.querySelector('.rolling-block:last-child');
+      if (lastBlock) {
+        currentCursorY = lastBlock.getBoundingClientRect().bottom;
+      } else {
+        currentCursorY = targetAnchorY;
+      }
+    }
+
+    // 3. 动态摄像机跟随算法：平滑阻尼使光标恒定保持在 [60% * H, 80% * H] 区间内
+    const errorY = currentCursorY - targetAnchorY;
+
+    if (currentCursorY > maxZoneY) {
+      // 触碰下限 (低于屏幕 80%)：快速平滑拉升
+      currentScrollY -= (errorY * 0.12);
+    } else if (currentCursorY < minZoneY) {
+      // 触碰上限 (高于屏幕 60%)：平滑缓动下降
+      currentScrollY -= (errorY * 0.08);
+    } else {
+      // 在 [60%, 80%] 黄金区间内：以极柔和阻尼向 70% 黄金中心线微调，保证文字匀速流淌
+      currentScrollY -= (errorY * 0.045);
+    }
+
+    trackElem.style.transform = `translateX(-50%) translateY(${currentScrollY}px)`;
 
     lastTrackHeight = trackElem.scrollHeight;
     requestAnimationFrame(tick);
